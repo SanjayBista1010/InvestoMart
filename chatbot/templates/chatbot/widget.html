@@ -1,52 +1,44 @@
-<!-- chatbot/templates/chatbot/widget.html -->
-{% load static %} <!-- Load the static template tag -->
-
 <div class="chatbot-widget">
     <div class="chatbot-header">
         <h3>Investment Assistant</h3>
-        <button onclick="toggleChatbot()" class="chatbot-toggle">×</button>
+        <button onclick="window.closeChatbot()" class="chatbot-toggle">×</button>
     </div>
-
+    
     <div class="chatbot-messages" id="chatMessages">
         <div id="loadingIndicator" style="display:none; text-align:center; color:#888; margin:10px 0;">
-            InvestoBot is typing...
+            Thinking...
         </div>
     </div>
-
+    
     <div class="chatbot-input">
-        <input type="text" id="chatInput" placeholder="Ask about gold prices, portfolio, etc..."
-               onkeypress="if(event.key === 'Enter') sendMessage()" />
-        <button onclick="sendMessage()">Send</button>
+        <input type="text" id="chatInput" placeholder="Ask about your portfolio..." />
+        <button onclick="window.sendChatMessage()">Send</button>
     </div>
-
+    
     {% if user.is_authenticated %}
     <div class="quick-actions">
-        <button onclick="quickQuery('What is the current gold price?')">Gold Price</button>
-        <button onclick="quickQuery('Show my portfolio')">Portfolio</button>
-        <button onclick="quickQuery('Give me investment recommendations')">Recommendations</button>
+        <button onclick="window.quickChatQuery('Show my portfolio')">Portfolio</button>
+        <button onclick="window.quickChatQuery('Gold price?')">Gold Price</button>
+        <button onclick="window.quickChatQuery('Recommendations')">Tips</button>
     </div>
     {% else %}
     <div class="quick-actions">
-        <button onclick="quickQuery('Gold price today')">Gold Price</button>
-        <button onclick="quickQuery('Investment options')">Investments</button>
-        <button onclick="window.location.href='{% url 'login' %}'">Login</button>
+        <button onclick="window.location.href='/login/'">Login First</button>
     </div>
     {% endif %}
 </div>
 
-<!-- Link to the external CSS file -->
-<link rel="stylesheet" type="text/css" href="{% static 'css/chatbot_widget.css' %}">
-
-<!-- Link to the external JS file -->
-<script src="{% static 'js/chatbot_widget.js' %}"></script>
-
-<!-- Optional: Add any page-specific script tags here if needed -->
-<script>
-// Example: Add a welcome message on page load
-// document.addEventListener('DOMContentLoaded', () => {
-//     setTimeout(() => {
-//         const welcome = {{ user.is_authenticated|yesno:"'Hello! Ask me about your portfolio or gold prices.','Hello! I am InvestoBot. Ask me about gold prices or investment options.'" }};
-//         addMessage(welcome, false);
-//     }, 500);
-// });
-</script>
+<style>
+.chatbot-widget { position:fixed; bottom:90px; right:20px; width:500px; height:600px; background:white; border-radius:15px; box-shadow:0 10px 30px rgba(0,0,0,0.2); display:flex; flex-direction:column; overflow:hidden; border:1px solid #e0e0e0; z-index:9999; }
+.chatbot-header { background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); color:white; padding:15px 20px; display:flex; justify-content:space-between; align-items:center; }
+.chatbot-toggle { background:rgba(255,255,255,0.2); border:none; color:white; width:30px; height:30px; border-radius:50%; cursor:pointer; font-size:20px; }
+.chatbot-messages { flex:1; padding:15px; overflow-y:auto; background:#f8f9fa; }
+.message { margin-bottom:12px; padding:12px 15px; border-radius:15px; max-width:85%; word-wrap:break-word; line-height:1.5; font-size:14px; }
+.user-message { background:#667eea; color:white; margin-left:auto; }
+.bot-message { background:white; color:#333; border:1px solid #e0e0e0; margin-right:auto; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
+.chatbot-input { padding:15px; border-top:1px solid #e0e0e0; display:flex; gap:10px; background:white; }
+.chatbot-input input { flex:1; padding:10px 15px; border:1px solid #ddd; border-radius:25px; outline:none; font-size:14px; }
+.chatbot-input button { background:#667eea; color:white; border:none; padding:10px 20px; border-radius:25px; cursor:pointer; }
+.quick-actions { padding:10px 15px; display:flex; flex-wrap:wrap; gap:8px; border-top:1px solid #e0e0e0; background:#f8f9fa; }
+.quick-actions button { background:white; border:1px solid #ddd; padding:6px 12px; border-radius:20px; font-size:12px; cursor:pointer; color:#555; }
+</style>

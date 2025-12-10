@@ -1,119 +1,121 @@
-// static/js/chatbot_widget.js
+// static/js/chatbot_widget.js (Fixed Version - Properly handles embedded HTML table)
 
 // Function to format message content for better display (applies bold, italic, line breaks)
 function formatMessageContent(text) {
     // Apply bold formatting: **text** -> <strong>text</strong>
     text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    // Apply italic formatting: *text* -> <em>text</em> (if needed)
+    // Apply italic formatting: *text* -> <em>text</em>
     text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
-    // Replace newlines within the block with <br> for line breaks
+    // Replace newlines with <br> for line breaks
     text = text.replace(/\n/g, '<br>');
     return text;
 }
 
+// Function to format message content and handle embedded HTML table
+function formatMessageContentWithTable(text) {
+    // Define the marker used by the backend
+    const tableMarker = "[[[PORTFOLIO_TABLE_HTML]]]";
 
-// Helper function to build an HTML table from an array of markdown-like lines (kept for compatibility)
-function buildTableFromLines(lines) {
-    if (lines.length === 0) return '';
+    console.log("Checking for table marker in text...");
+    console.log("Text length:", text.length);
+    console.log("First 100 chars:", text.substring(0, 100));
+    console.log("Last 200 chars:", text.substring(text.length - 200));
 
-    let html = '<table><thead><tbody>'; // Start table, assume first row is header until proven otherwise
-    let headerProcessed = false;
+    // Find the marker
+    const markerIndex = text.indexOf(tableMarker);
 
-    for (let j = 0; j < lines.length; j++) {
-        let line = lines[j].trim();
-        if (!line) continue; // Skip empty lines within table block
+    if (markerIndex !== -1) {
+        console.log("Table marker found at index:", markerIndex);
+        
+        // Split the text
+        const mainText = text.substring(0, markerIndex).trim();
+        const htmlTableString = text.substring(markerIndex + tableMarker.length).trim();
 
-        // Split line by '|', remove leading/trailing empty cells caused by '| text |'
-        let cells = line.split('|').map(cell => cell.trim()).filter((cell, index, arr) => index > 0 && index < arr.length - 1);
+        console.log("Main text length:", mainText.length);
+        console.log("HTML table length:", htmlTableString.length);
+        console.log("HTML table preview:", htmlTableString.substring(0, 100));
 
-        if (cells.length === 0) continue; // Skip lines that don't have actual cells after splitting
+        // Apply basic formatting to the main text part
+        const formattedMainText = formatMessageContent(mainText);
 
-        // Check if this line looks like a separator row (contains only - : | and spaces)
-        // e.g., | :--- | :---: | ---: |
-        if (!headerProcessed && cells.every(cell => /^[\-: ]+$/.test(cell))) {
-            // This is the separator line, implies previous line was header
-            continue; // Skip the separator line itself
-        }
-
-        // Determine if this row should be a header row
-        let isHeaderRow = !headerProcessed;
-        if (isHeaderRow) {
-            html += '<tr>';
-            cells.forEach(cell => {
-                // Apply formatting *inside* the header cell content (e.g., bold headers if marked)
-                cell = formatMessageContent(cell);
-                html += `<th>${cell}</th>`;
-            });
-            html += '</tr>';
-            headerProcessed = true;
-            html = html.replace('<tbody>', '<thead><tr>'); // Move first row to thead
-            html = html.replace('</tr><tbody>', '</tr></thead><tbody>'); // Close thead, open tbody
-        } else {
-             // It's a data row
-             if (!html.includes('<tbody>')) {
-                 // If no tbody tag exists yet (meaning no header was found), start tbody and treat this as first data row
-                 html += '<tbody><tr>';
-             } else {
-                 html += '<tr>'; // Add new data row
-             }
-             cells.forEach(cell => {
-                 // Apply formatting *inside* the data cell content (e.g., bold values if marked)
-                 cell = formatMessageContent(cell);
-                 html += `<td>${cell}</td>`;
-             });
-             html += '</tr>';
-        }
+        // Return an object containing both parts
+        return {
+            textPart: formattedMainText,
+            htmlPart: htmlTableString
+        };
     }
 
-    // Close the table tags properly
-    if (html.includes('<tbody>')) {
-        html += '</tbody></table>';
-    } else {
-        // If no tbody was added, it means only a header row was found, close appropriately
-        html += '</tr></thead></table>';
-    }
-
-    return html;
+    console.log("No table marker found, formatting entire text");
+    // If no marker is found, just format the whole text
+    return {
+        textPart: formatMessageContent(text),
+        htmlPart: null
+    };
 }
-
 
 function addMessage(text, isUser) {
     const chatMessages = document.getElementById('chatMessages');
-    if (!chatMessages) return;
+    if (!chatMessages) {
+        console.error("Could not find chatMessages element.");
+        return;
+    }
 
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
 
     if (isUser) {
+        // Use textContent for user messages to prevent XSS
         messageDiv.textContent = text;
     } else {
-        // For bot messages, the 'text' is now the main response string
-        // The table data (if any) will be handled separately in sendMessage's .then block
-        messageDiv.innerHTML = formatMessageContent(text); // Apply basic formatting to the main text part
+        // Apply formatting and check for embedded table
+        const processedContent = formatMessageContentWithTable(text);
+
+        if (processedContent.htmlPart) {
+            console.log("Processing bot message with table");
+            
+            // Set the formatted text part first
+            messageDiv.innerHTML = processedContent.textPart;
+
+            // Create a container for the table
+            const tableContainer = document.createElement('div');
+            tableContainer.style.marginTop = '10px';
+            tableContainer.innerHTML = processedContent.htmlPart;
+
+            // Append the table container to the message div
+            messageDiv.appendChild(tableContainer);
+            console.log("Appended HTML table to message");
+        } else {
+            console.log("Processing bot message without table");
+            // If no HTML part was found, just set the formatted text
+            messageDiv.innerHTML = processedContent.textPart;
+        }
     }
 
     chatMessages.appendChild(messageDiv);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+    chatMessages.scrollTop = chatMessages.scrollHeight; // Auto-scroll to bottom
+    console.log("Message added to chat");
 }
-
 
 function sendMessage() {
     const input = document.getElementById('chatInput');
-    if (!input) return;
+    if (!input) {
+        console.error("Could not find chatInput element.");
+        return;
+    }
 
     const message = input.value.trim();
     if (!message) return;
 
-    console.log("🔍 sendMessage: Sending message:", message); // Debug log
+    console.log("Sending message:", message);
 
-    addMessage(message, true); // Add the user's message first
+    addMessage(message, true);
     input.value = '';
     showLoading(true);
 
     fetch('/chatbot/api/', {
-        method:'POST',
+        method: 'POST',
         headers: {
-            'Content-Type':'application/json',
+            'Content-Type': 'application/json',
             'X-CSRFToken': getCSRFToken()
         },
         body: JSON.stringify({ message }),
@@ -121,99 +123,27 @@ function sendMessage() {
     })
     .then(resp => resp.json())
     .then(data => {
-        console.log("✅ sendMessage: Received API response:", data); // Debug log - check the response data
+        console.log("Received API response:", data);
         showLoading(false);
 
-        // Check if response exists and has the expected structure
         if (data && typeof data.response === 'string') {
-            console.log("🔍 sendMessage: Calling addMessage with bot response text:", data.response); // Debug log
-            addMessage(data.response, false); // Add the main bot response text
-
-            // Check if the response includes structured portfolio table data
-            if (data.portfolio_table_data) {
-                console.log("📈 sendMessage: Found portfolio_table_data, building table..."); // Debug log
-                const tableDiv = document.createElement('div'); // Create a container for the table
-                tableDiv.className = 'portfolio-table-container'; // Add a class for potential styling
-
-                const tableElement = buildTableFromStructuredData(data.portfolio_table_data);
-                if (tableElement) {
-                    tableDiv.appendChild(tableElement);
-                    // Append the table container div to the chat messages area
-                    const chatMessages = document.getElementById('chatMessages');
-                    chatMessages.appendChild(tableDiv);
-                    console.log("✅ sendMessage: Appended table element to chat messages."); // Debug log
-                } else {
-                    console.error("❌ sendMessage: buildTableFromStructuredData returned null/undefined.");
-                }
-            } else {
-                console.log("💬 sendMessage: No portfolio_table_data found in response.");
-            }
+            console.log("Response text length:", data.response.length);
+            addMessage(data.response, false);
         } else {
-            console.error("❌ sendMessage: API response is missing or malformed:", data);
+            console.error("API response is missing or malformed:", data);
             addMessage('Oops! Something went wrong getting the response.', false);
         }
     })
     .catch(err => {
-        console.error("❌ sendMessage: Error fetching response:", err); // Debug log
+        console.error("Error fetching response:", err);
         showLoading(false);
         addMessage('Oops! Something went wrong.', false);
     });
 }
 
-// --- NEW: Function to build HTML table from structured data object ---
-function buildTableFromStructuredData(tableData) {
-    console.log("🏗️ buildTableFromStructuredData: Building table from data:", tableData); // Debug log
-    if (!tableData || !tableData.headers || !Array.isArray(tableData.rows)) {
-        console.error("❌ buildTableFromStructuredData: Invalid table data structure received:", tableData);
-        return null; // Return null if data is invalid
-    }
-
-    // Create the main table element
-    const table = document.createElement('table');
-    table.className = 'portfolio-table'; // Apply the CSS class for styling
-
-    // Create thead and header row
-    const thead = document.createElement('thead');
-    const headerRow = document.createElement('tr');
-    tableData.headers.forEach(headerText => {
-        const th = document.createElement('th');
-        // Apply basic formatting inside header cells (e.g., bold markers like **Total**)
-        // We need to parse the text for formatting markers here too
-        const formattedHeader = formatMessageContent(headerText);
-        th.innerHTML = formattedHeader; // Use innerHTML to render potential <strong> tags from formatMessageContent
-        headerRow.appendChild(th);
-    });
-    thead.appendChild(headerRow);
-    table.appendChild(thead);
-
-    // Create tbody and data rows
-    const tbody = document.createElement('tbody');
-    tableData.rows.forEach((row, index) => {
-        const tr = document.createElement('tr');
-        // Check if this is the total row (e.g., based on the first cell content)
-        if (row[0] && row[0].includes('TOTAL')) {
-             tr.className = 'total-row'; // Apply specific class for styling the total row
-        }
-        row.forEach(cellText => {
-            const td = document.createElement('td');
-            // Apply basic formatting inside data cells (e.g., bold markers)
-            const formattedCell = formatMessageContent(cellText);
-            td.innerHTML = formattedCell; // Use innerHTML to render potential <strong> tags from formatMessageContent
-            tr.appendChild(td);
-        });
-        tbody.appendChild(tr);
-    });
-    table.appendChild(tbody);
-
-    console.log("✅ buildTableFromStructuredData: Successfully built table element:", table); // Debug log
-    return table; // Return the constructed table element
-}
-// --- END NEW: Function to build HTML table from structured data object ---
-
-
 function showLoading(show) {
     const loader = document.getElementById('loadingIndicator');
-    if(loader) loader.style.display = show ? 'block' : 'none';
+    if (loader) loader.style.display = show ? 'block' : 'none';
 }
 
 function getCSRFToken() {
@@ -228,10 +158,12 @@ function getCSRFToken() {
 
 function quickQuery(query) {
     const input = document.getElementById('chatInput');
-    if(input){ input.value = query; sendMessage(); }
+    if (input) {
+        input.value = query;
+        sendMessage();
+    }
 }
 
-// Toggle chatbot visibility (if you want this functionality)
 function toggleChatbot() {
     const widget = document.querySelector('.chatbot-widget');
     if (widget) {
@@ -239,19 +171,24 @@ function toggleChatbot() {
     }
 }
 
-// Initialize chatbot on page load (optional)
+// Initialize chatbot on page load
 document.addEventListener('DOMContentLoaded', () => {
-    // Example: Add a welcome message
-    // setTimeout(() => {
-    //     const welcome = {{ user.is_authenticated|yesno:"'Hello! Ask me about your portfolio or gold prices.','Hello! I'm InvestoBot. Ask me about gold prices or investment options.'" }};
-    //     addMessage(welcome, false);
-    // }, 500);
+    console.log("Chatbot widget JavaScript loaded.");
+    const input = document.getElementById('chatInput');
+    if (input) {
+        input.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    }
+    
+    // Add initial welcome message
+    setTimeout(() => {
+        const isAuthenticated = document.querySelector('.quick-actions button[onclick*="portfolio"]') !== null;
+        const welcome = isAuthenticated 
+            ? 'Hello! Ask me about your portfolio or gold prices.'
+            : 'Hello! I am InvestoBot. Ask me about gold prices or investment options.';
+        addMessage(welcome, false);
+    }, 500);
 });
-
-// Make functions available globally if needed elsewhere
-// window.ChatbotWidget = {
-//     addMessage: addMessage,
-//     sendMessage: sendMessage,
-//     quickQuery: quickQuery,
-//     toggleChatbot: toggleChatbot
-// };
