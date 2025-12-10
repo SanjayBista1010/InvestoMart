@@ -1,0 +1,201 @@
+/* static/css/chatbot_widget.css */
+
+/* Increased size */
+.chatbot-widget {
+    position: fixed;
+    bottom: 90px;
+    right: 20px;
+    width: 600px; /* Increased width */
+    height: 700px; /* Increased height */
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid #e0e0e0;
+    z-index: 1000; /* Ensure it's above other elements */
+}
+
+.chatbot-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 15px 15px 0 0;
+}
+
+.chatbot-toggle {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chatbot-messages {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+    background: #f8f9fa;
+}
+
+/* Improved message formatting */
+.message {
+    margin-bottom: 15px; /* Increased spacing */
+    padding: 12px 18px; /* Increased padding */
+    border-radius: 18px;
+    max-width: 90%; /* Allow slightly wider messages */
+    word-wrap: break-word;
+    line-height: 1.5; /* Improved readability */
+    font-size: 14px; /* Slightly larger font */
+    /* Add word-break for better wrapping */
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+.user-message {
+    background: #667eea;
+    color: white;
+    margin-left: auto; /* Align to right */
+    border-bottom-right-radius: 5px;
+}
+
+.bot-message {
+    background: white; /* Keep white background */
+    color: #333;
+    border: 1px solid #e0e0e0;
+    margin-right: auto; /* Align to left */
+    border-bottom-left-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    /* Ensure content respects word breaks */
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+/* --- NEW: Styling for the Portfolio HTML Table (constructed by JS) --- */
+/* Note: The table is now appended as a separate element, not inside .bot-message */
+.portfolio-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
+    font-size: 0.9em;
+    background-color: #ffffff; /* White background for table */
+    border: 1px solid #ddd; /* Light border */
+    border-radius: 8px; /* Rounded corners */
+    overflow: hidden; /* Ensure rounded corners apply to content */
+    table-layout: auto; /* Allow columns to size based on content */
+    margin-top: 10px; /* Space between text and table */
+}
+
+.portfolio-table th,
+.portfolio-table td {
+    padding: 8px 12px; /* Padding inside cells */
+    text-align: left; /* Left align text */
+    border-bottom: 1px solid #eee; /* Light bottom border for rows */
+}
+
+.portfolio-table th {
+    background-color: #f5f5f5; /* Light grey header background */
+    font-weight: bold; /* Bold header text */
+    color: #333; /* Header text color */
+}
+
+.portfolio-table tr:nth-child(even) {
+    background-color: #f9f9f9; /* Zebra striping for rows */
+}
+
+.portfolio-table tr.total-row {
+    background-color: #e6f7ff; /* Light blue background for total row */
+    font-weight: bold; /* Bold text for total row */
+}
+
+.portfolio-table tr:last-child td {
+    border-bottom: none; /* Remove bottom border from last row */
+}
+
+/* --- End NEW: Styling for the Portfolio HTML Table --- */
+
+
+/* Optional: Style for preformatted text within messages */
+.bot-message pre {
+    background: #f0f0f0;
+    padding: 8px;
+    border-radius: 4px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.4;
+    margin: 5px 0;
+}
+
+/* Optional: Style for code blocks within messages */
+.bot-message code {
+    background: #f0f0f0;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-size: 13px;
+}
+
+.chatbot-input {
+    padding: 15px;
+    border-top: 1px solid #e0e0e0;
+    display: flex;
+    gap: 10px;
+    background: white;
+}
+
+.chatbot-input input {
+    flex: 1;
+    padding: 12px 15px; /* Increased padding */
+    border: 1px solid #ddd;
+    border-radius: 25px;
+    outline: none;
+    font-size: 14px;
+}
+
+.chatbot-input input:focus {
+    border-color: #667eea;
+}
+
+.chatbot-input button {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 12px 20px; /* Increased padding */
+    border-radius: 25px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.quick-actions {
+    padding: 10px 15px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    border-top: 1px solid #e0e0e0;
+    background: #f8f9fa;
+}
+
+.quick-actions button {
+    background: white;
+    border: 1px solid #ddd;
+    padding: 8px 14px; /* Increased padding */
+    border-radius: 20px;
+    font-size: 12px;
+    cursor: pointer;
+    color: #555;
+    white-space: nowrap; /* Prevent button text from wrapping */
+}
+
+/* Hide the widget initially if needed */
+.chatbot-widget.hidden {
+    display: none;
+}

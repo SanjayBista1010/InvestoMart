@@ -1,0 +1,181 @@
+<!-- templates/base.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InvestoMart</title>
+    <style>
+        #chatbot-toggle-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 999;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav style="background: #667eea; color: white; padding: 15px;">
+        <a href="/" style="color: white; text-decoration: none; font-weight: bold; margin-right: 20px;">🏠 Home</a>
+        {% if user.is_authenticated %}
+            <a href="/profile/" style="color: white; text-decoration: none; margin-right: 20px;">👤 Profile</a>
+            <a href="/logout/" style="color: white; text-decoration: none;">🚪 Logout</a>
+        {% else %}
+            <a href="/login/" style="color: white; text-decoration: none; margin-right: 20px;">🔑 Login</a>
+            <a href="/signup/" style="color: white; text-decoration: none;">📝 Sign Up</a>
+        {% endif %}
+    </nav>
+
+    <!-- Main Content -->
+    <div style="padding: 20px; min-height: 80vh;">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Chatbot Container -->
+    <div id="chatbot-container" style="display: none;"></div>
+    
+    <!-- Chatbot Toggle Button -->
+    <button id="chatbot-toggle-btn" onclick="window.toggleChatbot()">💬</button>
+
+    <!-- GLOBAL CHATBOT FUNCTIONS -->
+    <script>
+        // Define global chatbot functions
+        window.addMessage = function(text, isUser) {
+            const chatMessages = document.getElementById('chatMessages');
+            if (!chatMessages) {
+                console.log('Chat messages element not found yet');
+                return;
+            }
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+            messageDiv.textContent = text;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        };
+
+        window.sendMessage = function() {
+            console.log('sendMessage called');
+            const input = document.getElementById('chatInput');
+            if (!input) {
+                console.error('Input element not found');
+                return;
+            }
+            
+            const message = input.value.trim();
+            if (!message) return;
+            
+            // Add user message
+            window.addMessage(message, true);
+            input.value = '';
+            
+            // Send to backend
+            fetch('/chatbot/api/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': window.getCSRFToken()
+                },
+                body: JSON.stringify({ message: message })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.response) {
+                    window.addMessage(data.response, false);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                window.addMessage('Sorry, something went wrong.', false);
+            });
+        };
+
+        window.quickQuery = function(query) {
+            const input = document.getElementById('chatInput');
+            if (input) {
+                input.value = query;
+                window.sendMessage();
+            }
+        };
+
+        window.getCSRFToken = function() {
+            const name = 'csrftoken';
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                const [n, value] = cookie.trim().split('=');
+                if (n === name) {
+                    return decodeURIComponent(value);
+                }
+            }
+            return '';
+        };
+
+        window.toggleChatbot = function() {
+            console.log('Toggle chatbot');
+            const container = document.getElementById('chatbot-container');
+            if (!container) {
+                console.error('Chatbot container not found');
+                return;
+            }
+            
+            if (container.style.display === 'none' || container.style.display === '') {
+                container.style.display = 'block';
+                // Load widget if empty
+                if (container.innerHTML.trim() === '') {
+                    window.loadChatbotWidget();
+                }
+            } else {
+                container.style.display = 'none';
+            }
+        };
+
+        window.loadChatbotWidget = function() {
+            console.log('Loading chatbot widget...');
+            fetch('/chatbot/widget/')
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('chatbot-container').innerHTML = html;
+                    console.log('✅ Widget loaded');
+                    // Add welcome message
+                    setTimeout(() => {
+                        const isAuthenticated = {{ user.is_authenticated|yesno:"true,false" }};
+                        const welcome = isAuthenticated 
+                            ? "👋 Hello! Ask me about your portfolio or gold prices."
+                            : "👋 Hello! I'm InvestoBot. Ask me about gold prices.";
+                        window.addMessage(welcome, false);
+                    }, 300);
+                })
+                .catch(error => {
+                    console.error('Failed to load widget:', error);
+                    // Create fallback
+                    document.getElementById('chatbot-container').innerHTML = `
+                        <div style="position: fixed; bottom: 90px; right: 20px; width: 350px; padding: 20px; background: white; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.2); z-index: 1000;">
+                            <h3>💬 Chat</h3>
+                            <p>Simple chat interface</p>
+                            <input id="chatInput" placeholder="Type message...">
+                            <button onclick="window.sendMessage()">Send</button>
+                        </div>
+                    `;
+                });
+        };
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('✅ Page loaded, chatbot ready');
+        });
+    </script>
+</body>
+</html>

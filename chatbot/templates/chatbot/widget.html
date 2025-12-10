@@ -1,0 +1,52 @@
+<!-- chatbot/templates/chatbot/widget.html -->
+{% load static %} <!-- Load the static template tag -->
+
+<div class="chatbot-widget">
+    <div class="chatbot-header">
+        <h3>Investment Assistant</h3>
+        <button onclick="toggleChatbot()" class="chatbot-toggle">×</button>
+    </div>
+
+    <div class="chatbot-messages" id="chatMessages">
+        <div id="loadingIndicator" style="display:none; text-align:center; color:#888; margin:10px 0;">
+            InvestoBot is typing...
+        </div>
+    </div>
+
+    <div class="chatbot-input">
+        <input type="text" id="chatInput" placeholder="Ask about gold prices, portfolio, etc..."
+               onkeypress="if(event.key === 'Enter') sendMessage()" />
+        <button onclick="sendMessage()">Send</button>
+    </div>
+
+    {% if user.is_authenticated %}
+    <div class="quick-actions">
+        <button onclick="quickQuery('What is the current gold price?')">Gold Price</button>
+        <button onclick="quickQuery('Show my portfolio')">Portfolio</button>
+        <button onclick="quickQuery('Give me investment recommendations')">Recommendations</button>
+    </div>
+    {% else %}
+    <div class="quick-actions">
+        <button onclick="quickQuery('Gold price today')">Gold Price</button>
+        <button onclick="quickQuery('Investment options')">Investments</button>
+        <button onclick="window.location.href='{% url 'login' %}'">Login</button>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Link to the external CSS file -->
+<link rel="stylesheet" type="text/css" href="{% static 'css/chatbot_widget.css' %}">
+
+<!-- Link to the external JS file -->
+<script src="{% static 'js/chatbot_widget.js' %}"></script>
+
+<!-- Optional: Add any page-specific script tags here if needed -->
+<script>
+// Example: Add a welcome message on page load
+// document.addEventListener('DOMContentLoaded', () => {
+//     setTimeout(() => {
+//         const welcome = {{ user.is_authenticated|yesno:"'Hello! Ask me about your portfolio or gold prices.','Hello! I am InvestoBot. Ask me about gold prices or investment options.'" }};
+//         addMessage(welcome, false);
+//     }, 500);
+// });
+</script>

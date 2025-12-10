@@ -1,0 +1,110 @@
+<!-- accounts/templates/accounts/profile.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 0 auto; padding: 30px;">
+    <h1 style="color: #333; margin-bottom: 30px; border-bottom: 2px solid #667eea; padding-bottom: 10px;">
+        👤 Welcome, {{ request.user.username }}
+    </h1>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px;">
+        <!-- User Info Card -->
+        <div style="background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <h2 style="color: #667eea; margin-bottom: 20px;">📋 Account Information</h2>
+            <div style="margin-bottom: 15px;">
+                <strong>Username:</strong> {{ request.user.username }}
+            </div>
+            <div style="margin-bottom: 15px;">
+                <strong>Email:</strong> {{ request.user.email|default:"Not provided" }}
+            </div>
+            <div style="margin-bottom: 15px;">
+                <strong>First Name:</strong> {{ request.user.first_name|default:"Not provided" }}
+            </div>
+            <div style="margin-bottom: 15px;">
+                <strong>Last Name:</strong> {{ request.user.last_name|default:"Not provided" }}
+            </div>
+            <div style="margin-bottom: 25px;">
+                <strong>Member Since:</strong> {{ request.user.date_joined|date:"F d, Y" }}
+            </div>
+            <a href="{% url 'logout' %}" 
+               style="display: inline-block; padding: 10px 20px; background: #dc3545; color: white; 
+                      text-decoration: none; border-radius: 5px; font-weight: bold;">
+                🚪 Logout
+            </a>
+        </div>
+        
+        <!-- Quick Actions Card -->
+        <div style="background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <h2 style="color: #667eea; margin-bottom: 20px;">⚡ Quick Actions</h2>
+            
+            <div style="display: grid; gap: 15px; margin-bottom: 25px;">
+                <button onclick="window.location.href='{% url 'home' %}'"
+                        style="padding: 12px; background: #f8f9fa; border: 1px solid #ddd; 
+                               border-radius: 5px; text-align: left; cursor: pointer; font-weight: bold;">
+                    🏠 Go to Home
+                </button>
+                
+                <button onclick="quickQuery('Show my portfolio')"
+                        style="padding: 12px; background: #f8f9fa; border: 1px solid #ddd; 
+                               border-radius: 5px; text-align: left; cursor: pointer; font-weight: bold;">
+                    📊 View Portfolio
+                </button>
+                
+                <button onclick="quickQuery('Recommendations')"
+                        style="padding: 12px; background: #f8f9fa; border: 1px solid #ddd; 
+                               border-radius: 5px; text-align: left; cursor: pointer; font-weight: bold;">
+                    ⭐ Get Recommendations
+                </button>
+                
+                <button onclick="toggleChatbot()"
+                        style="padding: 12px; background: #667eea; color: white; border: none; 
+                               border-radius: 5px; text-align: left; cursor: pointer; font-weight: bold;">
+                    💬 Chat with Assistant
+                </button>
+            </div>
+            
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; border-left: 4px solid #667eea;">
+                <p style="margin: 0; color: #666; font-size: 14px;">
+                    <strong>💡 Tip:</strong> Use the chatbot in the bottom right corner for investment advice, 
+                    portfolio tracking, and market updates.
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Chatbot Demo Section -->
+    <div style="margin-top: 40px; padding: 25px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); 
+                border-radius: 10px; border: 1px solid #dee2e6;">
+        <h2 style="color: #333; margin-bottom: 20px;">🤖 Investment Assistant Demo</h2>
+        <p style="color: #666; margin-bottom: 20px;">
+            Try asking our AI assistant about your investments, gold prices, or recommendations.
+        </p>
+        
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;">
+            <button onclick="quickQuery('What is the current gold price?')"
+                    style="padding: 10px 15px; background: white; border: 1px solid #667eea; 
+                           color: #667eea; border-radius: 20px; cursor: pointer;">
+                💰 Gold Price
+            </button>
+            <button onclick="quickQuery('How is my portfolio performing?')"
+                    style="padding: 10px 15px; background: white; border: 1px solid #667eea; 
+                           color: #667eea; border-radius: 20px; cursor: pointer;">
+                📈 Portfolio Performance
+            </button>
+            <button onclick="quickQuery('What should I invest in?')"
+                    style="padding: 10px 15px; background: white; border: 1px solid #667eea; 
+                           color: #667eea; border-radius: 20px; cursor: pointer;">
+                🎯 Investment Advice
+            </button>
+        </div>
+        
+        <div style="text-align: center;">
+            <button onclick="toggleChatbot()"
+                    style="padding: 12px 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                           color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">
+                💬 Open Full Chat Interface
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
