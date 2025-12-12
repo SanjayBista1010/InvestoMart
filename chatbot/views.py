@@ -1,6 +1,4 @@
-# ============================================
-# FILE 1: chatbot/views.py
-# ============================================
+# chatbot/views.py
 import json
 from django.shortcuts import render
 from django.http import JsonResponse
@@ -97,6 +95,10 @@ def chatbot_api(request):
         portfolio_html = ""
         
         if request.user.is_authenticated:
+            # --- NEW: Fetch user's full name ---
+            user_full_name = f"{request.user.first_name} {request.user.last_name}".strip()
+            # --- END NEW ---
+            
             mongo_id = get_mongo_user_id(request.user)
             
             if mongo_id:
@@ -109,7 +111,15 @@ def chatbot_api(request):
             else:
                 portfolio_text = "You have no investments yet."
             
-            context += f"\n\nUser: {request.user.username}\nPortfolio:\n{portfolio_text}"
+            # --- NEW: Include the full name in the context ---
+            user_context_parts = []
+            if user_full_name:
+                 user_context_parts.append(f"User's full name: {user_full_name}.")
+            user_context_parts.append(f"User's username: {request.user.username}.")
+            user_context_parts.append(f"Portfolio:\n{portfolio_text}")
+            
+            context += f"\n\n" + "\n".join(user_context_parts)
+            # --- END NEW ---
         
         # Call Ollama
         try:
@@ -158,4 +168,3 @@ def chatbot_api(request):
 
 def chatbot_widget(request):
     return render(request, 'chatbot/widget.html')
-
