@@ -1,0 +1,64 @@
+Starting Chatbot Metrics Verification...
+Calling Chatbot API...
+
+==================================================
+🚨 CHATBOT API CALLED: POST /api/chatbot/api/
+🚨 Request Content-Type: application/json
+🚨 Reading request body...
+🚨 Raw body length: 97
+
+[API] Processing Message: 'I want to invest in some healthy goats and check their prices.'
+[API] Content-Type: application/json
+[API] Session ID from Frontend: 'None'
+DEBUG: Detecting sentiment/intent...
+DEBUG: sentiment=neutral, intent=investment
+DEBUG: Checking request.user...
+DEBUG: user_authenticated=True, user=test_user
+🔌 [MONGO] Connecting to URI: mongodb+srv://SanjayBista... DB: goatfarm
+✅ [MONGO] Connection Successful!
+DEBUG: Found Mongo User ID: 698607103684275ae25b2019
+DEBUG: Vector search found 0 products
+DEBUG: Querying Ollama with structured context...
+
+==================================================
+🚨 FULL PROMPT SENT TO OLLAMA:
+SYSTEM: You are InvestoBot, a helpful assistant for the Investomart platform. 
+Your core goal is to help users with their specific queries, whether they are about livestock farming, investments, or platform features.
+
+CRITICAL INSTRUCTION:
+1. THE ACTIVE TOPIC IS KING. Always look at the 'RECENT CONVERSATION HISTORY' to identify the current subject (e.g., goats, chickens, a specific product).
+2. If the user asks a follow-up like 'in context of Nepal' or 'tell me more', they are referring to that ACTIVE TOPIC. 
+3. DO NOT switch to a general investment overview unless the user specifically asks to change topics.
+4. Be professional and concise. NO EMOJIS.
+
+CONTEXT & HISTORY:
+### USER INTENT
+The user appears to be asking about: investment
+
+USER: I want to invest in some healthy goats and check their prices.
+
+ASSISTANT:
+==================================================
+
+    Sending to Ollama...
+DEBUG: Saving message. UserID: 6, SessionID: None
+💾 [MONGO] Attempting to save message... Session: None
+✅ [MONGO] Successfully saved messages to session SESSION_20260210_015239
+DEBUG: Message saved. New SessionID: SESSION_20260210_015239
+API Response successful!
+Session ID: SESSION_20260210_015239
+Verifying MongoDB Data...
+Session record found!
+   - Total Messages: 4
+   - Total Tokens: 961
+   - Total Cost: $0.0288
+   - Topic: New Chat
+Found 4 messages in session.
+Assistant metrics captured:
+   - Sentiment: neutral
+   - Intent: investment
+   - Input Tokens: 199
+   - Output Tokens: 314
+   - Response Time: 10904ms
+
+Verification Complete!

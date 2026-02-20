@@ -1,0 +1,20 @@
+# Django & REST Framework
+Django==3.1.12
+djangorestframework==3.16.1
+django-cors-headers==3.1.1
+
+# Database
+pymongo==3.11.4
+
+# Google OAuth
+google-auth==2.48.0
+google-auth-oauthlib==1.2.1
+
+# Cloudinary (image/file uploads)
+cloudinary==1.44.1
+
+# Environment variables
+python-dotenv==1.1.0
+
+# HTTP
+requests==2.32.3

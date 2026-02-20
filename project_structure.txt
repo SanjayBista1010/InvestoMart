@@ -1,0 +1,51 @@
+investomart
+├── backend
+│   ├── data
+│   │   ├── __init__.py
+│   │   ├── admin.py
+│   │   ├── apps.py
+│   │   ├── models.py
+│   │   ├── serializers.py
+│   │   ├── tests.py
+│   │   ├── urls.py
+│   │   └── views.py
+│   ├── db.sqlite3
+│   ├── investomart
+│   │   ├── __init__.py
+│   │   ├── asgi.py
+│   │   ├── settings.py
+│   │   ├── urls.py
+│   │   └── wsgi.py
+│   └── manage.py
+├── frontend
+│   ├── .gitignore
+│   ├── README.md
+│   ├── eslint.config.js
+│   ├── index.html
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── public
+│   │   └── vite.svg
+│   ├── src
+│   │   ├── App.css
+│   │   ├── App.jsx
+│   │   ├── assets
+│   │   │   └── react.svg
+│   │   ├── components
+│   │   │   ├── Axios.jsx
+│   │   │   ├── Dashboard1.jsx
+│   │   │   ├── Dashboard2.jsx
+│   │   │   ├── Navbar.jsx
+│   │   │   └── charts
+│   │   │       ├── ChartBox.jsx
+│   │   │       ├── ChartBox2.jsx
+│   │   │       ├── CombiChart.jsx
+│   │   │       ├── DonutChart.jsx
+│   │   │       ├── LineChart.tsx
+│   │   │       ├── PieChart.jsx
+│   │   │       └── StackedBarChart.jsx
+│   │   ├── index.css
+│   │   └── main.jsx
+│   └── vite.config.js
+├── project_structure.py
+└── project_structure.txt
