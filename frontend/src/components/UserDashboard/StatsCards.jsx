@@ -17,26 +17,26 @@ const StatCard = ({ title, count, icon, bgColor, iconColor }) => (
     </div>
 );
 
-const StatsCards = () => {
+const StatsCards = ({ data }) => {
     return (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <StatCard
                 title="Total Goats"
-                count="120"
+                count={data?.goats || 0}
                 icon="🐐"
                 bgColor="bg-orange-50"
                 iconColor="text-orange-400"
             />
             <StatCard
                 title="Total Chickens"
-                count="600"
+                count={data?.chickens || 0}
                 icon="🐔"
                 bgColor="bg-blue-50"
                 iconColor="text-blue-400"
             />
             <StatCard
                 title="Total Buffalos"
-                count="49"
+                count={data?.buffalos || 0}
                 icon="🐃"
                 bgColor="bg-pink-50"
                 iconColor="text-pink-400"

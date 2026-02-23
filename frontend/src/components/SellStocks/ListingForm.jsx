@@ -9,6 +9,8 @@ const ListingForm = ({ onSuccess, editingProduct, onClearEdit, showToast }) => {
         quantity: '',
         current_weight: '',
         base_price: '',
+        farm_id: '',
+        location: '',
     });
     const [image, setImage] = useState(null);
     const [imageUrl, setImageUrl] = useState('');
@@ -25,6 +27,8 @@ const ListingForm = ({ onSuccess, editingProduct, onClearEdit, showToast }) => {
                 quantity: editingProduct.quantity || '',
                 current_weight: editingProduct.current_weight || '',
                 base_price: editingProduct.base_price || '',
+                farm_id: editingProduct.farm_id || '',
+                location: editingProduct.location || '',
             });
             setImageUrl(editingProduct.image_url || '');
         } else {
@@ -33,6 +37,8 @@ const ListingForm = ({ onSuccess, editingProduct, onClearEdit, showToast }) => {
                 quantity: '',
                 current_weight: '',
                 base_price: '',
+                farm_id: '',
+                location: '',
             });
             setImageUrl('');
             setImage(null);
@@ -113,7 +119,7 @@ const ListingForm = ({ onSuccess, editingProduct, onClearEdit, showToast }) => {
             if (onSuccess) onSuccess();
 
             if (!isEditMode) {
-                setFormData({ category: '', quantity: '', current_weight: '', base_price: '' });
+                setFormData({ category: '', quantity: '', current_weight: '', base_price: '', farm_id: '', location: '' });
                 setImage(null);
                 setImageUrl('');
             }
@@ -201,6 +207,32 @@ const ListingForm = ({ onSuccess, editingProduct, onClearEdit, showToast }) => {
                         value={formData.base_price}
                         onChange={handleChange}
                         placeholder="Enter total asking price"
+                        className="p-3 rounded-xl bg-gray-50 border-none focus:ring-2 focus:ring-green-500 outline-none transition-all"
+                    />
+                </div>
+
+                {/* Farm Name */}
+                <div className="flex flex-col gap-2">
+                    <label className="text-sm font-semibold text-gray-700">Farm Name (Optional)</label>
+                    <input
+                        type="text"
+                        name="farm_id"
+                        value={formData.farm_id}
+                        onChange={handleChange}
+                        placeholder="e.g. Green Valley Farm"
+                        className="p-3 rounded-xl bg-gray-50 border-none focus:ring-2 focus:ring-green-500 outline-none transition-all"
+                    />
+                </div>
+
+                {/* Farm Location */}
+                <div className="flex flex-col gap-2">
+                    <label className="text-sm font-semibold text-gray-700">Farm Location (Optional)</label>
+                    <input
+                        type="text"
+                        name="location"
+                        value={formData.location}
+                        onChange={handleChange}
+                        placeholder="e.g. Chitwan, Nepal"
                         className="p-3 rounded-xl bg-gray-50 border-none focus:ring-2 focus:ring-green-500 outline-none transition-all"
                     />
                 </div>

@@ -83,6 +83,8 @@ INSTALLED_APPS = [
     'rest_framework',
     "corsheaders",
     'chatbot',
+    'searchapp',
+    'payments',
 ]
 
 MIDDLEWARE = [

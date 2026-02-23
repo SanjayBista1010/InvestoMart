@@ -1,7 +1,6 @@
 from django.urls import path
 from . import views
 from . import upload_views
-from . import search_views
 
 urlpatterns = [
     # Authentication endpoints
@@ -20,6 +19,6 @@ urlpatterns = [
     path('products/update/<str:product_id>/', views.update_product_listing, name='update_product_listing'),
     path('products/delete/<str:product_id>/', views.delete_product_listing, name='delete_product_listing'),
     
-    # Search
-    path('search/', search_views.global_search, name='global_search'),
+    # Dashboard
+    path('dashboard/summary/', views.get_dashboard_summary, name='get_dashboard_summary'),
 ]

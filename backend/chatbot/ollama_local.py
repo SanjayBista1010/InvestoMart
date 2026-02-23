@@ -69,16 +69,21 @@ CRITICAL INSTRUCTION:
                 cleaned_text = self._clean_response(response_text)
                 
                 # Return rich metrics for enterprise analysis
+                output_tokens = result.get('eval_count', 0)
+                eval_duration_ms = result.get('eval_duration', 0) // 1_000_000
+                tokens_per_second = round(output_tokens / (eval_duration_ms / 1000), 2) if eval_duration_ms > 0 else 0
+
                 return {
                     'text': cleaned_text,
                     'metrics': {
                         'input_tokens': result.get('prompt_eval_count', 0),
-                        'output_tokens': result.get('eval_count', 0),
-                        'total_tokens': result.get('prompt_eval_count', 0) + result.get('eval_count', 0),
+                        'output_tokens': output_tokens,
+                        'total_tokens': result.get('prompt_eval_count', 0) + output_tokens,
                         'total_duration_ms': result.get('total_duration', 0) // 1_000_000,
                         'load_duration_ms': result.get('load_duration', 0) // 1_000_000,
                         'prompt_eval_duration_ms': result.get('prompt_eval_duration', 0) // 1_000_000,
-                        'eval_duration_ms': result.get('eval_duration', 0) // 1_000_000,
+                        'eval_duration_ms': eval_duration_ms,
+                        'tokens_per_second': tokens_per_second,
                         'model': self.model_name,
                         'parameters': {
                             'temperature': temperature,

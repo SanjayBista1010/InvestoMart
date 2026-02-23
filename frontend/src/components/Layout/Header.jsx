@@ -2,14 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import AgricultureIcon from '@mui/icons-material/Agriculture';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
+import { useCart } from '../../context/CartContext';
 import SearchBar from '../Search/SearchBar';
 
 const Header = () => {
     const location = useLocation();
     const { language, toggleLanguage, t } = useLanguage();
     const { user, logout } = useAuth();
+    const { getCartCount } = useCart();
+    const cartCount = getCartCount();
     const [currentTime, setCurrentTime] = useState(new Date());
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -63,6 +67,20 @@ const Header = () => {
                         <div className="hidden sm:flex flex-1 max-w-[300px]">
                             <SearchBar />
                         </div>
+
+                        {/* Cart Icon */}
+                        <Link
+                            to="/cart"
+                            className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gray-50 hover:bg-green-50 border border-gray-100 hover:border-green-200 transition-all group"
+                            title="Shopping Cart"
+                        >
+                            <ShoppingCartIcon className="text-gray-600 group-hover:text-green-700 transition-colors" style={{ fontSize: 20 }} />
+                            {cartCount > 0 && (
+                                <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 bg-green-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-md animate-bounce">
+                                    {cartCount > 99 ? '99+' : cartCount}
+                                </span>
+                            )}
+                        </Link>
 
                         {/* Date, Language, Profile Container */}
                         <div className="flex items-center gap-3 lg:gap-4 flex-shrink-0">
@@ -147,6 +165,15 @@ const Header = () => {
                                                     >
                                                         {t('dashboard')}
                                                     </Link>
+                                                    {(user.is_superuser || user.username === 'admin') && (
+                                                        <Link
+                                                            to="/admin-dashboard"
+                                                            onClick={() => setIsProfileOpen(false)}
+                                                            className="block px-3 py-2 text-sm font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors mt-1"
+                                                        >
+                                                            🔥 AI Analytics Admin
+                                                        </Link>
+                                                    )}
                                                     <button
                                                         onClick={() => {
                                                             logout();

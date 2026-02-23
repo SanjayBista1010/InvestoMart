@@ -8,6 +8,7 @@ export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
+    const [token, setToken] = useState(null);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const [loading, setLoading] = useState(true);
     const [redirectPath, setRedirectPath] = useState(null);
@@ -16,19 +17,20 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         // Build: Check local storage for existing session
         const storedUser = localStorage.getItem('user');
-        const token = localStorage.getItem('token');
+        const storedToken = localStorage.getItem('token');
 
-        if (storedUser && token) {
-            // Optional: Verify token with backend here
+        if (storedUser && storedToken) {
             setUser(JSON.parse(storedUser));
+            setToken(storedToken);
         }
         setLoading(false);
     }, []);
 
-    const login = (userData, token) => {
+    const login = (userData, authToken) => {
         setUser(userData);
-        if (token) {
-            localStorage.setItem('token', token);
+        setToken(authToken);
+        if (authToken) {
+            localStorage.setItem('token', authToken);
         }
         localStorage.setItem('user', JSON.stringify(userData));
         setIsDrawerOpen(false);
@@ -48,6 +50,7 @@ export const AuthProvider = ({ children }) => {
             console.error("Logout failed silently", error);
         }
         setUser(null);
+        setToken(null);
         localStorage.removeItem('token');
         localStorage.removeItem('user');
     };
@@ -58,6 +61,7 @@ export const AuthProvider = ({ children }) => {
     return (
         <AuthContext.Provider value={{
             user,
+            token,
             login,
             logout,
             isDrawerOpen,

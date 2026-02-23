@@ -153,7 +153,10 @@ def chatbot_api(request):
     if request.method != 'POST': 
         print("🚨 Rejected: Not a POST request")
         return JsonResponse({'error': 'POST only'}, status=405)
-    
+
+    # ── Wall-clock timer starts here ──────────────────────────────────────
+    request_start_time = time.time()
+
     try:
         print("🚨 Reading request body...")
         raw_body = request.body
@@ -253,6 +256,10 @@ def chatbot_api(request):
         elif retrieved_products and any(k in message.lower() for k in ['price', 'find']):
             final_output += "|||TABLE|||" + generate_products_html_table(retrieved_products)
             
+        # ── Wall-clock latency ────────────────────────────────────────────
+        wall_clock_ms = int((time.time() - request_start_time) * 1000)
+        print(f"[API] Wall-clock latency: {wall_clock_ms}ms")
+
         # Save History to Enterprise Collections
         new_session_id = session_id
         user_id_to_save = user_obj.id if (user_obj and user_authenticated) else "anonymous"
@@ -267,7 +274,8 @@ def chatbot_api(request):
                 metrics=metrics,
                 session_id=session_id,
                 sentiment=sentiment,
-                intent=intent
+                intent=intent,
+                wall_clock_ms=wall_clock_ms,
             )
             print(f"DEBUG: Message saved. New SessionID: {new_session_id}")
         except Exception as e:
@@ -277,7 +285,10 @@ def chatbot_api(request):
             'response': final_output, 
             'success': True,
             'session_id': new_session_id,
-            'metrics': metrics if settings.DEBUG else None
+            'metrics': {
+                **metrics,
+                'wall_clock_ms': wall_clock_ms,
+            } if settings.DEBUG else None
         })
 
     except Exception as e:
@@ -286,6 +297,14 @@ def chatbot_api(request):
         print("!"*30)
         print(error_msg)
         print("!"*30)
+        # Log error metric to MongoDB
+        wall_clock_ms = int((time.time() - request_start_time) * 1000)
+        try:
+            sid = locals().get('session_id') or 'unknown'
+            msg = locals().get('message') or ''
+            mongo_manager.log_error_metric(sid, type(e).__name__, str(e), user_message=msg)
+        except Exception:
+            pass
         try:
             with open("chatbot_crash.log", "a") as f:
                 f.write(f"\n--- {datetime.now()} ---\n{error_msg}\n")
@@ -338,5 +357,25 @@ def get_session_messages(request, session_id):
         # For now, fetching full history
         messages = mongo_manager.get_full_session_messages(session_id)
         return JsonResponse({'messages': messages})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@api_view(['GET'])
+@authentication_classes([SimpleTokenAuthentication, SessionAuthentication])
+@permission_classes([IsAuthenticated])
+def chatbot_metrics_summary(request):
+    """
+    Returns a comprehensive chatbot metrics summary saved in MongoDB.
+    Query param: ?days=30  (default 30, max 365)
+    Restricted to superusers.
+    """
+    if not request.user.is_superuser and request.user.username != 'admin':
+        return JsonResponse({'error': 'Admin access required to view metrics.'}, status=403)
+
+    try:
+        days = min(int(request.GET.get('days', 30)), 365)
+        summary = mongo_manager.get_metrics_summary(days=days)
+        return JsonResponse({'success': True, 'metrics': summary})
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)

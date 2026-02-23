@@ -8,4 +8,5 @@ urlpatterns = [
     path('sessions/', views.list_sessions, name='list_sessions'),
     path('sessions/<str:session_id>/messages/', views.get_session_messages, name='get_session_messages'),
     path('sessions/<str:session_id>/title/', views.update_session_title, name='update_session_title'),
+    path('metrics/', views.chatbot_metrics_summary, name='chatbot_metrics_summary'),
 ]

@@ -4,6 +4,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import LandingPage from './components/LandingPage';
 import HomePage from './components/HomePage';
 import UserDashboard from './components/UserDashboard/UserDashboard';
+import AdminDashboard from './components/AdminDashboard/AdminDashboard';
 import BuyStocksPage from './components/BuyStocks/BuyStocksPage';
 import SellStocksPage from './components/SellStocks/SellStocksPage';
 import FarmAnalysisPage from './components/SellStocks/FarmAnalysis/FarmAnalysisPage';
@@ -23,10 +24,13 @@ import MainLayout from './components/Layout/MainLayout';
 import { LanguageProvider } from './context/LanguageContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { SearchProvider } from './context/SearchContext';
+import { CartProvider } from './context/CartContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import AuthDrawer from './components/Auth/AuthDrawer';
 import LoginPage from './components/Auth/LoginPage';
 import SearchPage from './components/Search/SearchPage';
+import ItemDetailsPage from './components/Search/ItemDetailsPage';
+import CheckoutPage from './components/Checkout/CheckoutPage';
 import './App.css';
 
 const AppContent = () => {
@@ -39,6 +43,9 @@ const AppContent = () => {
         <Route path="/landing" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/search" element={<SearchPage />} />
+        <Route path="/product/:id" element={<ProtectedRoute><ItemDetailsPage type="product" /></ProtectedRoute>} />
+        <Route path="/livestock/:id" element={<ProtectedRoute><ItemDetailsPage type="livestock" /></ProtectedRoute>} />
+        <Route path="/checkout" element={<ProtectedRoute><CheckoutPage /></ProtectedRoute>} />
 
         {/* Protected Routes */}
         <Route path="/userdashboard" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
@@ -59,6 +66,7 @@ const AppContent = () => {
         <Route path="/cookies" element={<LegalDoc3 />} />
 
         <Route path="/chatbot" element={<ChatbotPage />} />
+        <Route path="/admin-dashboard" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
       </Routes>
 
       {/* Global Auth Drawer */}
@@ -77,7 +85,9 @@ function App() {
       <AuthProvider>
         <LanguageProvider>
           <SearchProvider>
-            <AppContent />
+            <CartProvider>
+              <AppContent />
+            </CartProvider>
           </SearchProvider>
         </LanguageProvider>
       </AuthProvider>

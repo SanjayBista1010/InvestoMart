@@ -15,7 +15,7 @@ const FEATURED_PILLS = [
     { name: 'Murrah Buffalo', image: '🐃', bgColor: 'bg-pink-50', textColor: 'text-gray-800' },
 ];
 
-const StockCategories = () => {
+const StockCategories = ({ selectedCategory, onSelectCategory }) => {
     return (
         <div className="mb-8">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
@@ -33,7 +33,12 @@ const StockCategories = () => {
 
                     <div className="flex gap-2">
                         {CATEGORIES.map((cat) => (
-                            <div key={cat.name} className={`w-10 h-10 rounded-full flex items-center justify-center text-xl cursor-pointer border-2 ${cat.color}`}>
+                            <div 
+                                key={cat.name} 
+                                onClick={() => onSelectCategory(cat.name)}
+                                className={`w-10 h-10 rounded-full flex items-center justify-center text-xl cursor-pointer border-2 transition-transform hover:scale-110 ${selectedCategory === cat.name ? cat.color : 'bg-gray-50 border-transparent opacity-50'}`}
+                                title={cat.name}
+                            >
                                 {cat.icon}
                             </div>
                         ))}
@@ -43,13 +48,14 @@ const StockCategories = () => {
 
             {/* Featured Pills */}
             <div className="flex gap-4 overflow-x-auto pb-2">
-                {FEATURED_PILLS.map((pill) => (
+                {CATEGORIES.filter(c => c.name !== 'All').map((cat) => (
                     <div
-                        key={pill.name}
-                        className={`flex items-center gap-3 px-6 py-3 rounded-full cursor-pointer shadow-sm min-w-max transition-transform hover:scale-105 ${pill.bgColor}`}
+                        key={cat.name}
+                        onClick={() => onSelectCategory(cat.name)}
+                        className={`flex items-center gap-3 px-6 py-3 rounded-full cursor-pointer shadow-sm min-w-max transition-transform hover:scale-105 ${selectedCategory === cat.name ? 'bg-green-600 text-white' : 'bg-white text-gray-800 border border-gray-100'}`}
                     >
-                        <span className="text-2xl">{pill.image}</span>
-                        <span className={`font-bold ${pill.textColor}`}>{pill.name}</span>
+                        <span className="text-2xl">{cat.icon}</span>
+                        <span className="font-bold">{cat.name}</span>
                     </div>
                 ))}
             </div>

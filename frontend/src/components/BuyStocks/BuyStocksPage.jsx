@@ -7,6 +7,8 @@ import CheckoutSidebar from './CheckoutSidebar';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 
 const BuyStocksPage = () => {
+    const [selectedCategory, setSelectedCategory] = React.useState('All');
+
     return (
         <div className="flex min-h-screen bg-gray-50 font-[Poppins]">
             {/* Sidebar */}
@@ -28,8 +30,11 @@ const BuyStocksPage = () => {
                     <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-8">
                         {/* Left Column: Categories and Products (Span 2) */}
                         <div className="lg:col-span-2">
-                            <StockCategories />
-                            <ProductGrid />
+                            <StockCategories 
+                                selectedCategory={selectedCategory} 
+                                onSelectCategory={setSelectedCategory} 
+                            />
+                            <ProductGrid selectedCategory={selectedCategory} />
                         </div>
 
                         {/* Right Column: Checkout Cart (Span 1) */}

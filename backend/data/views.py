@@ -281,7 +281,9 @@ def user_login(request):
                     'id': user.id,
                     'username': user.username,
                     'email': user.email,
-                    'name': user.get_full_name() or user.username
+                    'name': user.get_full_name() or user.username,
+                    'is_superuser': user.is_superuser,
+                    'is_staff': user.is_staff,
                 }
             })
         else:
@@ -380,6 +382,161 @@ def user_logout(request):
     except Exception as e:
         logger.exception(f"Error during logout: {str(e)}")
         return Response({'error': 'Logout failed'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_dashboard_summary(request):
+    try:
+        user = request.user
+        logger.info(f"Fetching dashboard summary for user: {user.username}")
+
+        products = Product.objects.filter(seller=user, status__in=['active', 'reserved'])
+
+        totals = {
+            'goat': {'count': 0, 'value': 0.0, 'feed': 0.0, 'water': 0.0},
+            'chicken': {'count': 0, 'value': 0.0, 'feed': 0.0, 'water': 0.0},
+            'buffalo': {'count': 0, 'value': 0.0, 'feed': 0.0, 'water': 0.0},
+            'other': {'count': 0, 'value': 0.0, 'feed': 0.0, 'water': 0.0}
+        }
+
+        for p in products:
+            cat = p.category.lower()
+            qty = p.quantity
+            # For batches (like chickens), the price might be per batch or per unit. 
+            # In seed_dummy, base_price=1500 and qty=50. Usually we list total batch price as base_price. 
+            # But let's assume current_price is per unit, so total is current_price * qty
+            # Wait, in seed_dummy, it says: price=1500 (Batch A), qty=50.
+            # If price is 1500 per batch, then value is 1500. 
+            # Let's check how the UI calculates earlier: "Chickens (600 x NPR 400) = 240,000". So UI assumes price is per unit.
+            # Let's assume current_price is per unit for the dashboard calculation.
+            value = float(p.current_price) * qty
+            
+            # Map category to our expected keys
+            if 'goat' in cat:
+                target_cat = 'goat'
+                feed_multiplier = 1.5
+                water_multiplier = 4.0
+            elif 'chicken' in cat or 'poultry' in cat:
+                target_cat = 'chicken'
+                feed_multiplier = 0.15
+                water_multiplier = 0.3
+            elif 'buffalo' in cat:
+                target_cat = 'buffalo'
+                feed_multiplier = 15.0
+                water_multiplier = 45.0
+            else:
+                target_cat = 'other'
+                feed_multiplier = 2.0
+                water_multiplier = 5.0
+
+            totals[target_cat]['count'] += qty
+            totals[target_cat]['value'] += value
+            totals[target_cat]['feed'] += (feed_multiplier * qty)
+            totals[target_cat]['water'] += (water_multiplier * qty)
+
+        total_value = sum(t['value'] for t in totals.values())
+
+        # Build Chart Data Variants
+        from dateutil.relativedelta import relativedelta
+        import calendar
+
+        now = timezone.now()
+        chart_data_variants = {
+            'week': [],
+            'month': [],
+            '6months': [],
+            'year': []
+        }
+
+        def get_cumulative_val(end_date):
+            return sum(
+                float(p.current_price) * p.quantity 
+                for p in products 
+                if p.created_at <= end_date
+            )
+
+        # 1. Week (Last 7 days)
+        for i in range(6, -1, -1):
+            target_date = now - timedelta(days=i)
+            end_of_day = target_date.replace(hour=23, minute=59, second=59)
+            val = get_cumulative_val(end_of_day)
+            chart_data_variants['week'].append({
+                'name': target_date.strftime('%a'), # Mon, Tue
+                'value': val
+            })
+
+        # 2. Month (Last 4 weeks roughly, or let's do 4 data points for a cleaner chart: week 1, 2, 3, 4 of the last 30 days)
+        # Actually 1 point every 5 days for the last 30 days makes a good curve
+        for i in range(5, -1, -1):
+            target_date = now - timedelta(days=i*6)
+            end_of_day = target_date.replace(hour=23, minute=59, second=59)
+            val = get_cumulative_val(end_of_day)
+            chart_data_variants['month'].append({
+                'name': target_date.strftime('%b %d'), # Oct 15
+                'value': val
+            })
+
+        # 3. 6 Months (Last 6 months)
+        for i in range(5, -1, -1):
+            target_date = now - relativedelta(months=i)
+            end_of_target_month = target_date.replace(
+                day=calendar.monthrange(target_date.year, target_date.month)[1],
+                hour=23, minute=59, second=59
+            )
+            val = get_cumulative_val(end_of_target_month)
+            chart_data_variants['6months'].append({
+                'name': target_date.strftime('%b'), # Jan, Feb
+                'value': val
+            })
+
+        # 4. Year (Last 12 months)
+        for i in range(11, -1, -1):
+            target_date = now - relativedelta(months=i)
+            end_of_target_month = target_date.replace(
+                day=calendar.monthrange(target_date.year, target_date.month)[1],
+                hour=23, minute=59, second=59
+            )
+            val = get_cumulative_val(end_of_target_month)
+            chart_data_variants['year'].append({
+                'name': target_date.strftime('%b'), # Jan, Feb
+                'value': val
+            })
+
+        return Response({
+            'animals': {
+                'goats': totals['goat']['count'],
+                'chickens': totals['chicken']['count'],
+                'buffalos': totals['buffalo']['count'],
+                'others': totals['other']['count'],
+                'total': sum(t['count'] for t in totals.values())
+            },
+            'financials': {
+                'total_farm_value': total_value,
+                'breakdown': {
+                    'goats': totals['goat']['value'],
+                    'chickens': totals['chicken']['value'],
+                    'buffalos': totals['buffalo']['value'],
+                    'others': totals['other']['value']
+                }
+            },
+            'resources': {
+                'feed': {
+                    'goats': totals['goat']['feed'],
+                    'chickens': totals['chicken']['feed'],
+                    'buffalos': totals['buffalo']['feed']
+                },
+                'water': {
+                    'goats': totals['goat']['water'],
+                    'chickens': totals['chicken']['water'],
+                    'buffalos': totals['buffalo']['water']
+                }
+            },
+            'chart_data': chart_data_variants
+        })
+
+    except Exception as e:
+        logger.exception(f"Error getting dashboard summary: {str(e)}")
+        return Response({'error': 'Internal server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['GET', 'PUT', 'PATCH'])
 @permission_classes([IsAuthenticated])
