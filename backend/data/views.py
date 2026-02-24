@@ -677,3 +677,58 @@ def platform_analytics_summary(request):
     except Exception as e:
         logger.error(f"Platform Analytics Error: {str(e)}")
         return Response({'success': False, 'error': 'Failed to load platform analytics'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_user_notifications(request):
+    """
+    Fetch all notifications for the authenticated user from MongoDB.
+    """
+    try:
+        from .mongodb_client import db
+        user_id = str(getattr(request.user, 'user_id', request.user.id))
+        
+        # Fetch notifications sorted by newest first
+        cursor = db.notifications.find({"user_id": user_id}).sort("created_at", -1).limit(50)
+        
+        notifications = []
+        for notif in cursor:
+            notifications.append({
+                'id': str(notif.get('_id')),
+                'message': notif.get('message'),
+                'type': notif.get('type'),
+                'is_read': notif.get('is_read', False),
+                'created_at': notif.get('created_at'),
+                'related_item_id': notif.get('related_item_id'),
+                'transaction_id': notif.get('transaction_id')
+            })
+            
+        return Response({'success': True, 'notifications': notifications})
+    except Exception as e:
+        logger.error(f"Failed to fetch notifications: {str(e)}")
+        return Response({'success': False, 'error': str(e)}, status=500)
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def mark_notification_read(request, notification_id):
+    """
+    Mark a specific notification as read.
+    """
+    try:
+        from .mongodb_client import db
+        from bson.objectid import ObjectId
+        
+        user_id = str(getattr(request.user, 'user_id', request.user.id))
+        
+        result = db.notifications.update_one(
+            {"_id": ObjectId(notification_id), "user_id": user_id},
+            {"$set": {"is_read": True}}
+        )
+        
+        if result.modified_count > 0:
+            return Response({'success': True})
+        return Response({'success': False, 'error': 'Notification not found or already read'}, status=404)
+        
+    except Exception as e:
+        logger.error(f"Failed to mark notification as read: {str(e)}")
+        return Response({'success': False, 'error': str(e)}, status=500)

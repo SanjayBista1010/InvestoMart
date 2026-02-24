@@ -22,4 +22,8 @@ urlpatterns = [
     # Dashboard
     path('dashboard/summary/', views.get_dashboard_summary, name='get_dashboard_summary'),
     path('analytics/platform/', views.platform_analytics_summary, name='platform_analytics_summary'),
+    
+    # Notifications
+    path('notifications/', views.get_user_notifications, name='get_user_notifications'),
+    path('notifications/<str:notification_id>/read/', views.mark_notification_read, name='mark_notification_read'),
 ]

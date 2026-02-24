@@ -3,6 +3,9 @@ import { Link, useLocation } from 'react-router-dom';
 import AgricultureIcon from '@mui/icons-material/Agriculture';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import axios from 'axios';
 import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
@@ -17,6 +20,8 @@ const Header = () => {
     const [currentTime, setCurrentTime] = useState(new Date());
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
+    const [isNotifOpen, setIsNotifOpen] = useState(false);
+    const [notifications, setNotifications] = useState([]);
 
     useEffect(() => {
         const timer = setInterval(() => {
@@ -24,6 +29,42 @@ const Header = () => {
         }, 1000);
         return () => clearInterval(timer);
     }, []);
+
+    useEffect(() => {
+        const fetchNotifications = async () => {
+            const token = localStorage.getItem('token');
+            if (user && token) {
+                try {
+                    const res = await axios.get('http://localhost:8000/api/notifications/', {
+                        headers: { Authorization: `Bearer ${token}` }
+                    });
+                    if (res.data.success) {
+                        setNotifications(res.data.notifications || []);
+                    }
+                } catch (err) {
+                    console.error('Failed to fetch notifications', err);
+                }
+            }
+        };
+        fetchNotifications();
+    }, [user, isNotifOpen]);
+
+    const markNotificationAsRead = async (id) => {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+        try {
+            const res = await axios.put(`http://localhost:8000/api/notifications/${id}/read/`, {}, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (res.data.success) {
+                setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
+            }
+        } catch (err) {
+            console.error('Failed to mark read', err);
+        }
+    };
+
+    const unreadCount = notifications.filter(n => !n.is_read).length;
 
     const navItems = [
         { name: t('home'), path: '/' },
@@ -136,6 +177,59 @@ const Header = () => {
                                     </div>
                                 )}
                             </div>
+
+                            {/* Notification Area */}
+                            {user && (
+                                <div className="relative">
+                                    <button
+                                        onClick={() => { setIsNotifOpen(!isNotifOpen); setIsProfileOpen(false); setIsDropdownOpen(false); }}
+                                        className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gray-50 hover:bg-green-50 border border-gray-100 hover:border-green-200 transition-all group"
+                                        title="Notifications"
+                                    >
+                                        <NotificationsNoneIcon className="text-gray-600 group-hover:text-green-700 transition-colors" style={{ fontSize: 20 }} />
+                                        {unreadCount > 0 && (
+                                            <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center shadow-md animate-pulse">
+                                                {unreadCount > 9 ? '9+' : unreadCount}
+                                            </span>
+                                        )}
+                                    </button>
+
+                                    {isNotifOpen && (
+                                        <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-2xl border border-gray-100 z-50 animate-in fade-in zoom-in duration-200 overflow-hidden flex flex-col max-h-96">
+                                            <div className="px-4 py-3 border-b border-gray-50 bg-gray-50/50 flex justify-between items-center">
+                                                <span className="font-bold text-gray-800">Notifications</span>
+                                                {unreadCount > 0 && <span className="text-xs text-green-700 font-bold bg-green-100 px-2 py-0.5 rounded-full">{unreadCount} New</span>}
+                                            </div>
+                                            <div className="overflow-y-auto flex-1 p-2 space-y-1">
+                                                {notifications.length === 0 ? (
+                                                    <p className="text-sm text-gray-500 text-center py-4">No new notifications</p>
+                                                ) : (
+                                                    notifications.map(notif => (
+                                                        <div 
+                                                            key={notif.id} 
+                                                            className={`p-3 rounded-xl flex gap-3 items-start transition-colors ${notif.is_read ? 'bg-white opacity-70' : 'bg-green-50/50 hover:bg-green-50 border border-green-100'}`}
+                                                        >
+                                                            <div className="flex-1 min-w-0">
+                                                                <p className={`text-sm ${notif.is_read ? 'text-gray-600' : 'text-gray-800 font-medium'}`}>{notif.message}</p>
+                                                                <p className="text-xs text-gray-400 mt-1">{new Date(notif.created_at).toLocaleString()}</p>
+                                                            </div>
+                                                            {!notif.is_read && (
+                                                                <button 
+                                                                    onClick={() => markNotificationAsRead(notif.id)}
+                                                                    title="Mark as read"
+                                                                    className="text-gray-400 hover:text-green-600 p-1"
+                                                                >
+                                                                    <CheckCircleOutlineIcon style={{ fontSize: 16 }} />
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    ))
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
 
                             {/* User Profile */}
                             <div className="relative">

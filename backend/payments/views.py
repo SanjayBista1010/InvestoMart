@@ -78,13 +78,21 @@ def process_payment(request):
 
         db.transactions.insert_one(transaction)
 
-        # Update stock
+        # Update stock and notify
         for item in items:
             item_id = item.get('item_id')
             item_type = item.get('item_type', 'product')
             qty = int(item.get('quantity', 1))
             
+            seller_id = None
+            item_name = "Item"
+            
             if item_type == 'product':
+                product = db.products.find_one({"$or": [{"product_id": item_id}, {"_id": item_id}]})
+                if product:
+                    seller_id = product.get('seller_id') or product.get('seller')
+                    item_name = product.get('title') or product.get('name') or "Product"
+                
                 db.products.update_one(
                     {"$or": [{"product_id": item_id}, {"_id": item_id}]},
                     {"$inc": {"quantity": -qty}}
@@ -94,10 +102,38 @@ def process_payment(request):
                     {"$set": {"status": "sold"}}
                 )
             elif item_type == 'livestock':
+                animal = db.livestock.find_one({"$or": [{"animal_id": item_id}, {"_id": item_id}]})
+                if animal:
+                    seller_id = animal.get('owner_id') or animal.get('seller_id') or animal.get('seller')
+                    item_name = animal.get('name') or animal.get('breed') or "Livestock"
+                
                 db.livestock.update_one(
                     {"$or": [{"animal_id": item_id}, {"_id": item_id}]},
                     {"$set": {"status": "sold"}}
                 )
+
+            # Notify seller
+            buyer_uid = str(getattr(request.user, 'user_id', request.user.id))
+            if seller_id and str(seller_id) != buyer_uid:
+                db.notifications.insert_one({
+                    "user_id": str(seller_id),
+                    "message": f"Your {item_type} '{item_name}' was just purchased!",
+                    "type": "sold",
+                    "related_item_id": str(item_id),
+                    "is_read": False,
+                    "created_at": datetime.utcnow()
+                })
+
+        # Notify buyer
+        buyer_id = str(getattr(request.user, 'user_id', request.user.id))
+        db.notifications.insert_one({
+            "user_id": buyer_id,
+            "message": f"Successfully purchased {len(items)} items for Rs. {amount}.",
+            "type": "purchase",
+            "transaction_id": transaction_id,
+            "is_read": False,
+            "created_at": datetime.utcnow()
+        })
 
         return Response({
             'message': 'Payment processed successfully',
