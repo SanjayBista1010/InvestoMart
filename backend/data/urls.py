@@ -21,4 +21,5 @@ urlpatterns = [
     
     # Dashboard
     path('dashboard/summary/', views.get_dashboard_summary, name='get_dashboard_summary'),
+    path('analytics/platform/', views.platform_analytics_summary, name='platform_analytics_summary'),
 ]

@@ -166,13 +166,22 @@ const Header = () => {
                                                         {t('dashboard')}
                                                     </Link>
                                                     {(user.is_superuser || user.username === 'admin') && (
-                                                        <Link
-                                                            to="/admin-dashboard"
-                                                            onClick={() => setIsProfileOpen(false)}
-                                                            className="block px-3 py-2 text-sm font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors mt-1"
-                                                        >
-                                                            🔥 AI Analytics Admin
-                                                        </Link>
+                                                        <>
+                                                            <Link
+                                                                to="/admin-dashboard"
+                                                                onClick={() => setIsProfileOpen(false)}
+                                                                className="block px-3 py-2 text-sm font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors mt-1"
+                                                            >
+                                                                🔥 AI Analytics Admin
+                                                            </Link>
+                                                            <Link
+                                                                to="/platform-analytics"
+                                                                onClick={() => setIsProfileOpen(false)}
+                                                                className="block px-3 py-2 text-sm font-bold text-green-700 bg-green-50 hover:bg-green-100 rounded-lg transition-colors mt-1"
+                                                            >
+                                                                📈 Platform Analytics
+                                                            </Link>
+                                                        </>
                                                     )}
                                                     <button
                                                         onClick={() => {

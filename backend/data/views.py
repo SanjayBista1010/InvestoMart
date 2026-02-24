@@ -586,3 +586,94 @@ def user_profile(request):
     except Exception as e:
         logger.exception(f"Error in user_profile view: {str(e)}")
         return Response({'error': 'Failed to process profile request'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def platform_analytics_summary(request):
+    """
+    Returns platform-wide e-commerce analytics for the admin/platform dashboard.
+    Restricted to superusers/admins.
+    """
+    if not request.user.is_superuser and request.user.username != 'admin':
+        return Response({'success': False, 'error': 'Unauthorized'}, status=status.HTTP_403_FORBIDDEN)
+
+    try:
+        from .mongodb_client import db
+        thirty_days_ago = timezone.now() - timedelta(days=30)
+        
+        # 1. Total active listings
+        active_products_count = db.products.count_documents({"status": {"$ne": "sold"}})
+        active_livestock_count = db.livestock.count_documents({"status": "active"})
+        
+        # 2. Revenue and Orders (last 30 days)
+        recent_txs = list(db.transactions.find({
+            "status": "completed",
+            "payment_date": {"$gte": thirty_days_ago}
+        }))
+        
+        total_revenue = sum(float(tx.get('total_amount', 0)) for tx in recent_txs)
+        total_orders = len(recent_txs)
+        
+        # Aggregate daily revenue
+        daily_revenue_map = {}
+        for i in range(30, -1, -1):
+            d = (timezone.now() - timedelta(days=i)).strftime('%b %d')
+            daily_revenue_map[d] = 0
+
+        product_sales_freq = {}
+        
+        for tx in recent_txs:
+            dt = tx.get('payment_date')
+            if dt:
+                day_str = dt.strftime('%b %d')
+                if day_str in daily_revenue_map:
+                    daily_revenue_map[day_str] += float(tx.get('total_amount', 0))
+            
+            # Aggregate product sales
+            for item in tx.get('items', []):
+                if item.get('item_type', 'product') == 'product':
+                    item_id = item.get('item_id')
+                    qty = int(item.get('quantity', 1))
+                    product_sales_freq[item_id] = product_sales_freq.get(item_id, 0) + qty
+                    
+        daily_revenue_chart = [{'name': k, 'revenue': v} for k, v in daily_revenue_map.items()]
+        
+        # 3. Top Selling Commodities
+        top_selling_commodities = []
+        sorted_products = sorted(product_sales_freq.items(), key=lambda x: x[1], reverse=True)[:5]
+        
+        for p_id, count in sorted_products:
+            prod = db.products.find_one({"$or": [{"product_id": p_id}, {"_id": p_id}]})
+            title = prod.get('title') or prod.get('name') or "Unknown Product" if prod else "Unknown Product"
+            top_selling_commodities.append({
+                "id": str(p_id),
+                "name": title,
+                "sales": count
+            })
+            
+        # 4. Most Popular Livestock (by views)
+        popular_livestock = []
+        popular_cursor = db.livestock.find({"status": "active"}).sort("views", -1).limit(5)
+        
+        for l in popular_cursor:
+            title = f"{l.get('name') or l.get('breed', 'Unknown')} ({l.get('type', '').capitalize()})"
+            popular_livestock.append({
+                "id": l.get('animal_id', str(l.get('_id'))),
+                "name": title,
+                "views": l.get('views', 0)
+            })
+
+        return Response({
+            'success': True,
+            'data': {
+                'total_revenue': total_revenue,
+                'total_orders': total_orders,
+                'active_listings': active_products_count + active_livestock_count,
+                'daily_revenue': daily_revenue_chart,
+                'top_commodities': top_selling_commodities,
+                'popular_livestock': popular_livestock
+            }
+        })
+    except Exception as e:
+        logger.error(f"Platform Analytics Error: {str(e)}")
+        return Response({'success': False, 'error': 'Failed to load platform analytics'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

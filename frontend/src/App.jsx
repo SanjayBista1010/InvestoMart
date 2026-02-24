@@ -5,6 +5,7 @@ import LandingPage from './components/LandingPage';
 import HomePage from './components/HomePage';
 import UserDashboard from './components/UserDashboard/UserDashboard';
 import AdminDashboard from './components/AdminDashboard/AdminDashboard';
+import PlatformAnalytics from './components/Analytics/PlatformAnalytics';
 import BuyStocksPage from './components/BuyStocks/BuyStocksPage';
 import SellStocksPage from './components/SellStocks/SellStocksPage';
 import FarmAnalysisPage from './components/SellStocks/FarmAnalysis/FarmAnalysisPage';
@@ -67,6 +68,7 @@ const AppContent = () => {
 
         <Route path="/chatbot" element={<ChatbotPage />} />
         <Route path="/admin-dashboard" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+        <Route path="/platform-analytics" element={<ProtectedRoute><PlatformAnalytics /></ProtectedRoute>} />
       </Routes>
 
       {/* Global Auth Drawer */}

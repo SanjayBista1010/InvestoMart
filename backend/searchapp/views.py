@@ -88,6 +88,9 @@ def get_product_by_id(request, product_id):
         if not p:
             return Response({'error': 'Product not found'}, status=404)
             
+        # Increment views for analytics
+        db.products.update_one({"product_id": product_id}, {"$inc": {"views": 1}})
+            
         # Optional: Fetch related livestock info if available
         related_animal = None
         if p.get('animal_id'):
@@ -137,6 +140,9 @@ def get_livestock_by_id(request, animal_id):
         l = db.livestock.find_one({"animal_id": animal_id})
         if not l:
             return Response({'error': 'Livestock not found'}, status=404)
+            
+        # Increment views for analytics
+        db.livestock.update_one({"animal_id": animal_id}, {"$inc": {"views": 1}})
             
         result = {
             'id': l.get('animal_id', str(l.get('_id'))),
