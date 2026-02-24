@@ -70,7 +70,7 @@ const Header = () => {
 
                         {/* Cart Icon */}
                         <Link
-                            to="/cart"
+                            to="/checkout"
                             className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gray-50 hover:bg-green-50 border border-gray-100 hover:border-green-200 transition-all group"
                             title="Shopping Cart"
                         >
