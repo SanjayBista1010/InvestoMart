@@ -256,13 +256,6 @@ const Header = () => {
                                                 {(user.is_superuser || user.username === 'admin') && (
                                                     <div className="py-1 border-b border-gray-50">
                                                         <Link
-                                                            to="/admin-dashboard"
-                                                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors"
-                                                            onClick={() => setIsProfileOpen(false)}
-                                                        >
-                                                            🛡️ Admin Dashboard
-                                                        </Link>
-                                                        <Link
                                                             to="/platform-analytics"
                                                             className="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors"
                                                             onClick={() => setIsProfileOpen(false)}

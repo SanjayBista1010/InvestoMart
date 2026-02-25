@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useAuth } from '../../../context/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 import CampaignIcon from '@mui/icons-material/Campaign';
 import SendIcon from '@mui/icons-material/Send';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
@@ -96,8 +96,8 @@ const BroadcastNotification = () => {
                                         type="button"
                                         onClick={() => setType(option.value)}
                                         className={`px-4 py-3 rounded-xl border text-sm font-medium transition-all ${type === option.value
-                                                ? `bg-${option.color}-50 border-${option.color}-200 text-${option.color}-700 ring-2 ring-${option.color}-200`
-                                                : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                                            ? `bg-${option.color}-50 border-${option.color}-200 text-${option.color}-700 ring-2 ring-${option.color}-200`
+                                            : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
                                             }`}
                                     >
                                         {option.label}
@@ -144,8 +144,8 @@ const BroadcastNotification = () => {
                                 type="submit"
                                 disabled={status.state === 'loading'}
                                 className={`flex items-center gap-2 px-8 py-3 rounded-xl font-bold transition-all shadow-sm ${status.state === 'loading'
-                                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                        : 'bg-green-600 text-white hover:bg-green-700 hover:shadow-md active:bg-green-800'
+                                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                    : 'bg-green-600 text-white hover:bg-green-700 hover:shadow-md active:bg-green-800'
                                     }`}
                             >
                                 {status.state === 'loading' ? (
