@@ -787,3 +787,121 @@ def broadcast_notification(request):
     except Exception as e:
         logger.error(f"Broadcast Failed: {str(e)}")
         return Response({'success': False, 'error': str(e)}, status=500)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def user_profile_summary(request):
+    """
+    Returns aggregated portfolio value, holdings grouped by typing, and a history of transactions.
+    """
+    try:
+        from .mongodb_client import db
+        user = request.user
+        user_id_str = str(getattr(user, 'user_id', user.id))
+        
+        # 1. Fetch User's Active Livestock Portfolio
+        active_livestock = list(db.livestock.find({
+            "owner": user.username,
+            "status": "active"
+        }))
+        
+        portfolio_value = 0
+        holdings_map = {}
+        
+        for animal in active_livestock:
+            current_val = float(animal.get('current_value', animal.get('purchase_price', 0)))
+            portfolio_value += current_val
+            
+            # Group by type (e.g., Goats, Chickens, Buffalos)
+            a_type = str(animal.get('type', 'Other')).capitalize()
+            # Standardize plurals to match frontend expectations
+            if not a_type.endswith('s'):
+                if a_type == 'Buffalo': a_type = 'Buffalos'
+                elif a_type != 'Other': a_type += 's'
+                
+            if a_type not in holdings_map:
+                holdings_map[a_type] = {'count': 0, 'value': 0}
+            
+            holdings_map[a_type]['count'] += 1
+            holdings_map[a_type]['value'] += current_val
+            
+        holdings = []
+        for h_type, data in holdings_map.items():
+            holdings.append({
+                'type': h_type,
+                'count': data['count'],
+                'value': data['value']
+            })
+            
+        # 2. Fetch User's Transaction History
+        raw_transactions = list(db.transactions.find({
+            "$or": [
+                {"buyer_id": user_id_str},
+                {"seller_id": user_id_str}
+            ]
+        }).sort("payment_date", -1).limit(50)) # Get latest 50
+        
+        transactions = []
+        for idx, tx in enumerate(raw_transactions):
+            is_seller = str(tx.get('seller_id')) == user_id_str
+            t_type = 'Income' if is_seller else 'Expense'
+            
+            # Extract basic item info (assume one main item per transaction for display)
+            items = tx.get('items', [])
+            if not items: continue
+            
+            main_item = items[0]
+            item_type = main_item.get('item_type', 'product')
+            item_name = main_item.get('name', 'Unknown Item')
+            
+            # Determine icons based on string matching
+            icon = '📦'
+            icon_bg = 'bg-gray-100'
+            animal_label = item_name
+            
+            if item_type == 'livestock':
+                animal_lower = item_name.lower()
+                if 'goat' in animal_lower: 
+                    icon, icon_bg = '🐐', 'bg-orange-100'
+                    animal_label = 'Goat'
+                elif 'chicken' in animal_lower: 
+                    icon, icon_bg = '🐔', 'bg-blue-100'
+                    animal_label = 'Chicken'
+                elif 'buffalo' in animal_lower: 
+                    icon, icon_bg = '🐃', 'bg-pink-100'
+                    animal_label = 'Buffalo'
+                elif 'cow' in animal_lower: 
+                    icon, icon_bg = '🐄', 'bg-purple-100'
+                    animal_label = 'Cow'
+                elif 'sheep' in animal_lower: 
+                    icon, icon_bg = '🐑', 'bg-gray-200'
+                    animal_label = 'Sheep'
+            else:
+                icon_bg = 'bg-green-100'
+                
+            # Date formatting (e.g. Sep 9, 2024, 04:30pm)
+            date_obj = tx.get('payment_date')
+            formatted_date = date_obj.strftime("%b %d, %Y, %I:%M%p").lower() if isinstance(date_obj, datetime) else str(date_obj)
+            
+            transactions.append({
+                'id': str(tx.get('_id')) or str(idx),
+                'date': formatted_date,
+                'type': t_type,
+                'animal': animal_label,
+                'icon': icon,
+                'iconBg': icon_bg,
+                'qty': main_item.get('quantity', 1),
+                'price': float(tx.get('total_amount', main_item.get('price', 0))),
+                'status': str(tx.get('status', 'Completed')).capitalize()
+            })
+            
+        return Response({
+            'success': True,
+            'portfolio_value': portfolio_value,
+            'holdings': holdings,
+            'transactions': transactions
+        })
+        
+    except Exception as e:
+        logger.error(f"Profile API Error: {str(e)}")
+        return Response({'success': False, 'error': 'Failed to load profile summary'}, status=500)

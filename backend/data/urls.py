@@ -19,9 +19,10 @@ urlpatterns = [
     path('products/update/<str:product_id>/', views.update_product_listing, name='update_product_listing'),
     path('products/delete/<str:product_id>/', views.delete_product_listing, name='delete_product_listing'),
     
-    # Dashboard
+    # Dashboard & Profile Analytics
     path('dashboard/summary/', views.get_dashboard_summary, name='get_dashboard_summary'),
     path('analytics/platform/', views.platform_analytics_summary, name='platform_analytics_summary'),
+    path('profile/summary/', views.user_profile_summary, name='user_profile_summary'),
     
     # Notifications
     path('notifications/', views.get_user_notifications, name='get_user_notifications'),

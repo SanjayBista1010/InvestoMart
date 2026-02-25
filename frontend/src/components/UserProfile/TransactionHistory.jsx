@@ -3,33 +3,15 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 
 const tabs = ['All', 'Savings', 'Income', 'Expenses'];
 
-const transactions = [
-    {
-        id: 1,
-        date: 'Sep 9, 2024, 04:30pm',
-        type: 'Income',
-        animal: 'Goats',
-        icon: '🐐',
-        iconBg: 'bg-orange-100',
-        qty: 30,
-        price: 'NPR 1,00,000',
-        status: 'Pending',
-    },
-    {
-        id: 2,
-        date: 'Sep 9, 2024, 04:30pm',
-        type: 'Income',
-        animal: 'Chickens',
-        icon: '🐔',
-        iconBg: 'bg-blue-100',
-        qty: 500,
-        price: 'NPR 50,000',
-        status: 'Completed',
-    }
-];
-
-const TransactionHistory = () => {
+const TransactionHistory = ({ transactions }) => {
     const [activeTab, setActiveTab] = useState('All');
+
+    // Filter transactions based on active tab
+    const filteredTransactions = transactions?.filter(txn => {
+        if (activeTab === 'All') return true;
+        if (activeTab === 'Savings') return false; // Savings not explicitly tracked in this model yet
+        return txn.type === activeTab;
+    }) || [];
 
     return (
         <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-50 mb-8">
@@ -61,38 +43,50 @@ const TransactionHistory = () => {
                         <tr>
                             <th className="py-4 px-4 text-xs font-bold text-gray-400 uppercase">Date</th>
                             <th className="py-4 px-4 text-xs font-bold text-gray-400 uppercase">Type</th>
-                            <th className="py-4 px-4 text-xs font-bold text-gray-400 uppercase">Animal</th>
+                            <th className="py-4 px-4 text-xs font-bold text-gray-400 uppercase">Item</th>
                             <th className="py-4 px-4 text-xs font-bold text-gray-400 uppercase">Qty</th>
-                            <th className="py-4 px-4 text-xs font-bold text-gray-400 uppercase">Price</th>
+                            <th className="py-4 px-4 text-xs font-bold text-gray-400 uppercase">Amount</th>
                             <th className="py-4 px-4 text-xs font-bold text-gray-400 uppercase">Status</th>
                             <th className="py-4 px-4 text-xs font-bold text-gray-400 uppercase text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
-                        {transactions.map(txn => (
-                            <tr key={txn.id} className="hover:bg-gray-50 transition-colors">
-                                <td className="py-4 px-4 text-sm font-bold text-gray-800">{txn.date}</td>
-                                <td className="py-4 px-4 text-sm font-bold text-gray-800">{txn.type}</td>
-                                <td className="py-4 px-4">
-                                    <div className="flex items-center gap-2">
-                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm ${txn.iconBg}`}>
-                                            {txn.icon}
-                                        </div>
-                                        <span className="text-sm font-bold text-gray-800">{txn.animal}</span>
-                                    </div>
-                                </td>
-                                <td className="py-4 px-4 text-sm font-bold text-gray-800">{txn.qty}</td>
-                                <td className="py-4 px-4 text-sm font-bold text-gray-800">{txn.price}</td>
-                                <td className="py-4 px-4">
-                                    <span className={`text-xs font-bold px-3 py-1 rounded-full ${txn.status === 'Pending' ? 'text-yellow-500 bg-yellow-50' : 'text-green-500 bg-green-50'}`}>
-                                        {txn.status}
-                                    </span>
-                                </td>
-                                <td className="py-4 px-4 text-right">
-                                    <MoreVertIcon fontSize="small" className="text-gray-400 cursor-pointer" />
+                        {filteredTransactions.length === 0 ? (
+                            <tr>
+                                <td colSpan="7" className="py-8 text-center text-sm text-gray-500 font-serif">
+                                    No transactions found.
                                 </td>
                             </tr>
-                        ))}
+                        ) : (
+                            filteredTransactions.map(txn => (
+                                <tr key={txn.id} className="hover:bg-gray-50 transition-colors">
+                                    <td className="py-4 px-4 text-sm font-bold text-gray-800">{txn.date}</td>
+                                    <td className={`py-4 px-4 text-sm font-bold ${txn.type === 'Income' ? 'text-green-600' : 'text-red-500'}`}>
+                                        {txn.type === 'Income' ? '+ ' : '- '}{txn.type}
+                                    </td>
+                                    <td className="py-4 px-4">
+                                        <div className="flex items-center gap-2">
+                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm ${txn.iconBg}`}>
+                                                {txn.icon}
+                                            </div>
+                                            <span className="text-sm font-bold text-gray-800">{txn.animal}</span>
+                                        </div>
+                                    </td>
+                                    <td className="py-4 px-4 text-sm font-bold text-gray-800">{txn.qty}</td>
+                                    <td className="py-4 px-4 text-sm font-bold text-gray-800">
+                                        {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'NPR', maximumFractionDigits: 0 }).format(txn.price)}
+                                    </td>
+                                    <td className="py-4 px-4">
+                                        <span className={`text-xs font-bold px-3 py-1 rounded-full ${txn.status === 'Pending' ? 'text-yellow-500 bg-yellow-50' : 'text-green-500 bg-green-50'}`}>
+                                            {txn.status}
+                                        </span>
+                                    </td>
+                                    <td className="py-4 px-4 text-right">
+                                        <MoreVertIcon fontSize="small" className="text-gray-400 cursor-pointer" />
+                                    </td>
+                                </tr>
+                            ))
+                        )}
                     </tbody>
                 </table>
             </div>
