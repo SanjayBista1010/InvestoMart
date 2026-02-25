@@ -732,3 +732,58 @@ def mark_notification_read(request, notification_id):
     except Exception as e:
         logger.error(f"Failed to mark notification as read: {str(e)}")
         return Response({'success': False, 'error': str(e)}, status=500)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def broadcast_notification(request):
+    """
+    Admin-only endpoint to explicitly broadcast a notification to all users on the platform.
+    """
+    if not (request.user.is_superuser or request.user.username == 'admin'):
+        return Response({'success': False, 'error': 'Unauthorized'}, status=403)
+        
+    try:
+        from .mongodb_client import db
+        from django.contrib.auth import get_user_model
+        
+        User = get_user_model()
+        message = request.data.get('message')
+        notif_type = request.data.get('type', 'system')
+        
+        if not message:
+            return Response({'success': False, 'error': 'Message is required'}, status=400)
+            
+        # Get all distinct user IDs from the SQL database
+        all_user_ids = list(User.objects.values_list('id', flat=True))
+        
+        if not all_user_ids:
+            return Response({'success': False, 'error': 'No users found'}, status=400)
+            
+        # Create a bulk list of notification documents
+        timestamp = datetime.utcnow()
+        notifications = []
+        
+        for uid in all_user_ids:
+            notifications.append({
+                "user_id": str(uid),
+                "message": message,
+                "type": notif_type,
+                "is_read": False,
+                "created_at": timestamp,
+                "is_broadcast": True
+            })
+            
+        # Bulk Insert
+        if notifications:
+            result = db.notifications.insert_many(notifications)
+            return Response({
+                'success': True, 
+                'message': f'Broadcast sent to {len(result.inserted_ids)} users.',
+                'notipients_count': len(result.inserted_ids)
+            })
+            
+        return Response({'success': False, 'error': 'Failed to prepare broadcasts.'}, status=500)
+        
+    except Exception as e:
+        logger.error(f"Broadcast Failed: {str(e)}")
+        return Response({'success': False, 'error': str(e)}, status=500)

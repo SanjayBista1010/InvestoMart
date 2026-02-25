@@ -205,8 +205,8 @@ const Header = () => {
                                                     <p className="text-sm text-gray-500 text-center py-4">No new notifications</p>
                                                 ) : (
                                                     notifications.map(notif => (
-                                                        <div 
-                                                            key={notif.id} 
+                                                        <div
+                                                            key={notif.id}
                                                             className={`p-3 rounded-xl flex gap-3 items-start transition-colors ${notif.is_read ? 'bg-white opacity-70' : 'bg-green-50/50 hover:bg-green-50 border border-green-100'}`}
                                                         >
                                                             <div className="flex-1 min-w-0">
@@ -214,7 +214,7 @@ const Header = () => {
                                                                 <p className="text-xs text-gray-400 mt-1">{new Date(notif.created_at).toLocaleString()}</p>
                                                             </div>
                                                             {!notif.is_read && (
-                                                                <button 
+                                                                <button
                                                                     onClick={() => markNotificationAsRead(notif.id)}
                                                                     title="Mark as read"
                                                                     className="text-gray-400 hover:text-green-600 p-1"
@@ -248,6 +248,38 @@ const Header = () => {
                                             <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-2xl py-1 border border-gray-100 z-50 animate-in fade-in zoom-in duration-200">
                                                 <div className="px-4 py-3 border-b border-gray-50 bg-gray-50/50 rounded-t-2xl">
                                                     <p className="text-sm font-bold text-gray-900 truncate">{user.name || user.username}</p>
+                                                    <p className="text-xs text-green-600 font-medium truncate mt-0.5">
+                                                        {user.is_superuser || user.username === 'admin' ? 'Administrator' : 'Verified User'}
+                                                    </p>
+                                                </div>
+
+                                                {(user.is_superuser || user.username === 'admin') && (
+                                                    <div className="py-1 border-b border-gray-50">
+                                                        <Link
+                                                            to="/admin-dashboard"
+                                                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors"
+                                                            onClick={() => setIsProfileOpen(false)}
+                                                        >
+                                                            🛡️ Admin Dashboard
+                                                        </Link>
+                                                        <Link
+                                                            to="/platform-analytics"
+                                                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors"
+                                                            onClick={() => setIsProfileOpen(false)}
+                                                        >
+                                                            📈 Platform Analytics
+                                                        </Link>
+                                                        <Link
+                                                            to="/admin-broadcast"
+                                                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors bg-blue-50/30 font-medium"
+                                                            onClick={() => setIsProfileOpen(false)}
+                                                        >
+                                                            📢 Broadcast Alert
+                                                        </Link>
+                                                    </div>
+                                                )}
+
+                                                <div className="py-1">
                                                     <p className="text-xs text-gray-500 truncate">{user.email}</p>
                                                 </div>
 
