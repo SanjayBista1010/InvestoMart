@@ -9,6 +9,10 @@ urlpatterns = [
     path('auth/logout/', views.user_logout, name='user_logout'),
     path('auth/profile/', views.user_profile, name='user_profile'),
     path('auth/google/', views.google_auth, name='google_auth'),
+    path('auth/verify-email/', views.verify_email, name='verify_email'),
+    
+    # KYC Endpoints
+    path('kyc/submit/', views.submit_kyc, name='submit_kyc'),
     
     # Uploads
     path('upload/', upload_views.upload_image, name='upload_image'),

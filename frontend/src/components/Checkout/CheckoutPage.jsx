@@ -2,15 +2,18 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useCart } from '../../context/CartContext';
+import { useAuth } from '../../context/AuthContext';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import KYCGuardModal from '../KYC/KYCGuardModal';
 
 const CheckoutPage = () => {
     const navigate = useNavigate();
+    const { user } = useAuth();
     const { cartItems, updateQuantity, removeFromCart, clearCart, getCartTotal } = useCart();
 
     const [selectedPayment, setSelectedPayment] = useState('esewa');
@@ -22,8 +25,17 @@ const CheckoutPage = () => {
     const platformFee = subtotal * 0.05;
     const total = subtotal + platformFee;
 
+    const [showKYCGuard, setShowKYCGuard] = useState(false);
+
     const handlePayment = async () => {
         if (cartItems.length === 0) return;
+
+        // KYC Gate
+        if (user?.kyc_status !== 'verified') {
+            setShowKYCGuard(true);
+            return;
+        }
+
         setIsProcessing(true);
         setError('');
 
@@ -96,6 +108,8 @@ const CheckoutPage = () => {
 
     return (
         <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8 font-[Poppins]">
+            {showKYCGuard && <KYCGuardModal actionLabel="purchase items" />}
+
             <div className="max-w-5xl mx-auto">
                 <button
                     onClick={() => navigate(-1)}
@@ -120,8 +134,8 @@ const CheckoutPage = () => {
                             <div className="divide-y divide-gray-50">
                                 {cartItems.map(item => {
                                     const icon = item.category === 'chicken' ? '🐔' :
-                                                 item.category === 'goat' ? '🐐' :
-                                                 item.category === 'buffalo' ? '🐃' : '📦';
+                                        item.category === 'goat' ? '🐐' :
+                                            item.category === 'buffalo' ? '🐃' : '📦';
                                     return (
                                         <div key={item.id} className="p-5 flex items-center gap-4">
                                             {/* Thumbnail */}
@@ -146,8 +160,8 @@ const CheckoutPage = () => {
                                                     <RemoveCircleOutlineIcon sx={{ fontSize: 18 }} />
                                                 </button>
                                                 <span className="font-bold text-gray-800 w-6 text-center text-sm">{item.quantity}</span>
-                                                <button 
-                                                    onClick={() => updateQuantity(item.id, 1)} 
+                                                <button
+                                                    onClick={() => updateQuantity(item.id, 1)}
                                                     disabled={item.quantity >= (item.available_quantity || 1)}
                                                     className={`transition-colors ${item.quantity >= (item.available_quantity || 1) ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:text-green-600'}`}
                                                 >

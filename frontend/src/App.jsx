@@ -12,6 +12,8 @@ import BuyStocksPage from './components/BuyStocks/BuyStocksPage';
 import SellStocksPage from './components/SellStocks/SellStocksPage';
 import FarmAnalysisPage from './components/SellStocks/FarmAnalysis/FarmAnalysisPage';
 import UserProfilePage from './components/UserProfile/UserProfilePage';
+import KYCFormPage from './components/KYC/KYCFormPage';
+import EmailVerificationPage from './components/KYC/EmailVerificationPage';
 import VideoSurveillancePage from './components/VideoSurveillance/VideoSurveillancePage';
 import HealthRecordsPage from './components/HealthRecords/HealthRecordsPage';
 import Dashboard1 from './components/Dashboard1';
@@ -58,6 +60,9 @@ const AppContent = () => {
         <Route path="/profile" element={<ProtectedRoute><UserProfilePage /></ProtectedRoute>} />
         <Route path="/surveillance" element={<ProtectedRoute><VideoSurveillancePage /></ProtectedRoute>} />
         <Route path="/health-records" element={<ProtectedRoute><HealthRecordsPage /></ProtectedRoute>} />
+
+        <Route path="/kyc" element={<ProtectedRoute><KYCFormPage /></ProtectedRoute>} />
+        <Route path="/verify-email" element={<EmailVerificationPage />} />
 
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard1 /></ProtectedRoute>} />
         <Route path="/dashboard2" element={<ProtectedRoute><Dashboard2 /></ProtectedRoute>} />

@@ -20,6 +20,14 @@ from .exceptions import (
 )
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
+from django.core.exceptions import ValidationError
+from django.db.models import Sum, Count
+from django.db.models.functions import TruncMonth
+
+from collections import defaultdict
+import uuid
+from django.core.mail import send_mail
+from django.conf import settings
 
 # Initialize logger
 logger = logging.getLogger(__name__)
@@ -106,6 +114,15 @@ def create_product_listing(request):
         })
 
         data = request.data.copy()
+        
+        # Enforce KYC Trade Barrier
+        if request.user.kyc_status != 'verified':
+            logger.warning(f"Blocked product creation attempt for unverified user {request.user.id}")
+            return Response(
+                {'error': 'Forbidden', 'message': 'You must complete KYC verification before listing items.'}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+            
         data['seller'] = request.user.id
         
         # Generate product_id if not present
@@ -157,6 +174,52 @@ def create_product_listing(request):
             'event': 'create_listing_exception'
         })
         return Response({'error': 'Internal server error', 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def submit_kyc(request):
+    try:
+        user = request.user
+        logger.info(f"KYC submission attempt for user {user.id}")
+        
+        # Only allow submission if not already verified
+        if user.kyc_status == 'verified':
+            return Response({'error': 'KYC is already verified'}, status=status.HTTP_400_BAD_REQUEST)
+            
+        data = request.data
+        
+        # Validate required fields
+        required_fields = [
+            'citizenship_no', 'pan_no', 'temp_address', 'perm_address',
+            'citizenship_front_url', 'citizenship_back_url', 'pan_url'
+        ]
+        
+        missing = [f for f in required_fields if not data.get(f)]
+        if missing:
+            return Response({
+                'error': 'Missing required KYC fields',
+                'details': f"Please provide: {', '.join(missing)}"
+            }, status=status.HTTP_400_BAD_REQUEST)
+            
+        # Update user profile
+        user.citizenship_no = data['citizenship_no']
+        user.pan_no = data['pan_no']
+        user.temp_address = data['temp_address']
+        user.perm_address = data['perm_address']
+        user.citizenship_front_url = data['citizenship_front_url']
+        user.citizenship_back_url = data['citizenship_back_url']
+        user.pan_url = data['pan_url']
+        
+        user.kyc_status = 'pending'
+        user.kyc_submitted_at = timezone.now()
+        user.save()
+        
+        logger.info(f"KYC submitted successfully for user {user.id}")
+        return Response({'message': 'KYC submitted successfully and is pending admin approval'})
+        
+    except Exception as e:
+        logger.exception(f"Error submitting KYC for user {request.user.id}: {str(e)}")
+        return Response({'error': 'Internal server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 # Authentication views with error handling
 @api_view(['POST'])
@@ -231,7 +294,9 @@ def google_auth(request):
                 'username': user.username,
                 'email': user.email,
                 'name': user.get_full_name() or user.username,
-                'avatar': picture
+                'avatar': picture,
+                'kyc_status': user.kyc_status,
+                'is_email_verified': user.is_email_verified
             }
         })
 
@@ -284,6 +349,8 @@ def user_login(request):
                     'name': user.get_full_name() or user.username,
                     'is_superuser': user.is_superuser,
                     'is_staff': user.is_staff,
+                    'kyc_status': user.kyc_status,
+                    'is_email_verified': user.is_email_verified
                 }
             })
         else:
@@ -337,10 +404,25 @@ def user_register(request):
             user.first_name = name_parts[0]
             if len(name_parts) > 1:
                 user.last_name = name_parts[1]
-            user.save()
+        
+        # Email Verification Token Generation
+        token = str(uuid.uuid4())
+        user.email_verification_token = token
+        user.is_email_verified = False
+        user.save()
+        
+        # Send Verification Email (to Backend Console)
+        verification_url = f"http://localhost:5173/verify-email?token={token}"
+        send_mail(
+            subject='Verify your InvestoMart Account',
+            message=f'Welcome {user.username}! Please verify your email by clicking: {verification_url}',
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+            fail_silently=False,
+        )
         
         login(request, user)
-        logger.info(f"User {user.username} registered successfully")
+        logger.info(f"User {user.username} registered successfully. Verification email sent.")
         
         # Generate token
         token = f"{user.id}-{user.username}"
@@ -352,7 +434,9 @@ def user_register(request):
                 'id': user.id,
                 'username': user.username,
                 'email': user.email,
-                'name': user.get_full_name() or user.username
+                'name': user.get_full_name() or user.username,
+                'kyc_status': user.kyc_status,
+                'is_email_verified': user.is_email_verified
             }
         }, status=status.HTTP_201_CREATED)
     
@@ -368,6 +452,29 @@ def user_register(request):
     
     except Exception as e:
         logger.exception(f"Unexpected error during registration: {str(e)}")
+        return Response({'error': 'Internal server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def verify_email(request):
+    try:
+        token = request.data.get('token')
+        if not token:
+            return Response({'error': 'Token is required'}, status=status.HTTP_400_BAD_REQUEST)
+            
+        user = User.objects.filter(email_verification_token=token).first()
+        if not user:
+            return Response({'error': 'Invalid or expired verification token'}, status=status.HTTP_400_BAD_REQUEST)
+            
+        user.is_email_verified = True
+        user.email_verification_token = '' # Clear the token
+        user.save()
+        
+        logger.info(f"User {user.username} successfully verified their email.")
+        return Response({'message': 'Email verified successfully!'}, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        logger.exception(f"Error resolving email verification: {str(e)}")
         return Response({'error': 'Internal server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['POST'])
@@ -580,7 +687,9 @@ def user_profile(request):
             'name': user.get_full_name() or user.username,
             'last_name_change': user.last_name_change,
             'next_allowed_change': next_allowed,
-            'cooldown_days': 90
+            'cooldown_days': 90,
+            'kyc_status': user.kyc_status,
+            'is_email_verified': user.is_email_verified
         })
     
     except Exception as e:

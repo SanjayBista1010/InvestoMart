@@ -27,7 +27,18 @@ class User(AbstractUser):
     country = models.CharField(max_length=100, blank=True)
     postal_code = models.CharField(max_length=20, blank=True)
     
-    # KYC
+    # KYC Data
+    citizenship_no = models.CharField(max_length=50, blank=True)
+    pan_no = models.CharField(max_length=50, blank=True)
+    temp_address = models.CharField(max_length=255, blank=True)
+    perm_address = models.CharField(max_length=255, blank=True)
+    citizenship_front_url = models.URLField(blank=True)
+    citizenship_back_url = models.URLField(blank=True)
+    pan_url = models.URLField(blank=True)
+    kyc_submitted_at = models.DateTimeField(null=True, blank=True)
+    email_verification_token = models.CharField(max_length=64, blank=True)
+    is_email_verified = models.BooleanField(default=False)
+    
     kyc_status = models.CharField(
         max_length=20,
         choices=[('pending', 'Pending'), ('verified', 'Verified'), ('rejected', 'Rejected')],

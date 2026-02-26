@@ -22,6 +22,11 @@ def process_payment(request):
     """
     try:
         data = request.data
+        
+        # Enforce KYC Trade Barrier for Buyers
+        if request.user.kyc_status != 'verified':
+            return Response({'error': 'You must complete KYC verification before purchasing items.'}, status=403)
+            
         amount = float(data.get('amount', 0))
         payment_method = data.get('payment_method', 'esewa')
         items = data.get('items', [])
