@@ -7,7 +7,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.db import DatabaseError
 from django.utils import timezone
-from datetime import timedelta
+from datetime import datetime, timedelta
 import logging
 from .serializers import *
 from .models import *
@@ -112,9 +112,9 @@ def create_product_listing(request):
         if 'product_id' not in data:
             data['product_id'] = f"PROD-{uuid.uuid4().hex[:8].upper()}"
             
-        # Determine status (default active)
-        if 'status' not in data:
-            data['status'] = 'active'
+        # Determine status (default pending for admin approval)
+        if 'status' not in data or data['status'] == 'active':
+            data['status'] = 'pending'
             
         # Set defaults if missing (mapping from form to model)
         if 'current_price' not in data and 'base_price' in data:
@@ -905,3 +905,98 @@ def user_profile_summary(request):
     except Exception as e:
         logger.error(f"Profile API Error: {str(e)}")
         return Response({'success': False, 'error': 'Failed to load profile summary'}, status=500)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_pending_approvals(request):
+    """
+    Fetch all pending KYC applications and pending product/livestock listings for Admin.
+    """
+    if not (request.user.is_superuser or request.user.username == 'admin'):
+        return Response({'error': 'Unauthorized. Admin access required.'}, status=403)
+        
+    try:
+        from .mongodb_client import db
+        
+        # 1. Pending KYC Users (SQLite mapped via PyMongo or just query Django models)
+        # Assuming KYC status is stored in the Django User model (data.User)
+        pending_kyc_users = list(User.objects.filter(kyc_status='pending').values(
+            'id', 'username', 'email', 'first_name', 'last_name', 'phone', 'created_at'
+        ))
+        
+        kyc_approvals = [{
+            'id': u['id'],
+            'type': 'kyc',
+            'title': f"KYC: {u['first_name']} {u['last_name']} ({u['username']})",
+            'subtitle': f"Email: {u['email']} | Phone: {u['phone']}",
+            'date': u['created_at'].strftime("%b %d, %Y") if u['created_at'] else 'Unknown'
+        } for u in pending_kyc_users]
+        
+        # 2. Pending Products (PyMongo)
+        raw_products = list(db.products.find({"status": "pending"}).sort("created_at", -1))
+        product_approvals = [{
+            'id': p.get('product_id', str(p.get('_id'))),
+            'type': 'product',
+            'title': f"Listing: {p.get('title')}",
+            'subtitle': f"Category: {p.get('category')} | Price: {p.get('current_price')} {p.get('currency', 'USD')}",
+            'seller_id': p.get('seller_id'),
+            'date': p.get('created_at').strftime("%b %d, %Y") if isinstance(p.get('created_at'), datetime) else str(p.get('created_at', 'Unknown'))
+        } for p in raw_products]
+        
+        return Response({
+            'success': True,
+            'approvals': kyc_approvals + product_approvals
+        })
+        
+    except Exception as e:
+        logger.error(f"Error fetching pending approvals: {str(e)}")
+        return Response({'success': False, 'error': str(e)}, status=500)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def process_approval_action(request):
+    """
+    Handle Approve/Reject actions for KYC and Items.
+    Payload: {"type": "kyc"|"product", "id": "...", "action": "approve"|"reject"}
+    """
+    if not (request.user.is_superuser or request.user.username == 'admin'):
+        return Response({'error': 'Unauthorized. Admin access required.'}, status=403)
+        
+    try:
+        item_type = request.data.get('type')
+        item_id = request.data.get('id')
+        action = request.data.get('action') # 'approve' or 'reject'
+        
+        if not all([item_type, item_id, action]):
+            return Response({'error': 'Missing required fields'}, status=400)
+            
+        from .mongodb_client import db
+        
+        if item_type == 'kyc':
+            user = User.objects.get(id=item_id)
+            user.kyc_status = 'verified' if action == 'approve' else 'rejected'
+            user.save()
+            
+        elif item_type == 'product':
+            new_status = 'active' if action == 'approve' else 'rejected'
+            db.products.update_one(
+                {"product_id": item_id},
+                {"$set": {"status": new_status, "updated_at": datetime.now()}}
+            )
+            
+            # Optional: if it rejected, we might want to notify the seller
+            # We already have a Notification model logic we could trigger here
+            
+        return Response({
+            'success': True, 
+            'message': f"{item_type.upper()} {item_id} successfully {action}d."
+        })
+        
+    except User.DoesNotExist:
+        return Response({'success': False, 'error': 'User not found for KYC'}, status=404)
+    except Exception as e:
+        logger.error(f"Error processing approval: {str(e)}")
+        return Response({'success': False, 'error': str(e)}, status=500)
+

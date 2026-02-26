@@ -6,6 +6,7 @@ import HomePage from './components/HomePage';
 import UserDashboard from './components/UserDashboard/UserDashboard';
 import AdminDashboard from './components/AdminDashboard/AdminDashboard';
 import BroadcastNotification from './components/Admin/BroadcastNotification';
+import AdminApprovalPanel from './components/Admin/ApprovalPanel/AdminApprovalPanel';
 import PlatformAnalytics from './components/Analytics/PlatformAnalytics';
 import BuyStocksPage from './components/BuyStocks/BuyStocksPage';
 import SellStocksPage from './components/SellStocks/SellStocksPage';
@@ -70,6 +71,7 @@ const AppContent = () => {
         <Route path="/chatbot" element={<ChatbotPage />} />
         <Route path="/admin-dashboard" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
         <Route path="/admin-broadcast" element={<ProtectedRoute><BroadcastNotification /></ProtectedRoute>} />
+        <Route path="/admin-approvals" element={<ProtectedRoute><AdminApprovalPanel /></ProtectedRoute>} />
         <Route path="/platform-analytics" element={<ProtectedRoute><PlatformAnalytics /></ProtectedRoute>} />
       </Routes>
 

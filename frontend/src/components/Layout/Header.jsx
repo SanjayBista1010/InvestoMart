@@ -269,6 +269,13 @@ const Header = () => {
                                                         >
                                                             📢 Broadcast Alert
                                                         </Link>
+                                                        <Link
+                                                                to="/admin-approvals"
+                                                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors bg-purple-50/30 font-medium border-t border-gray-50 mt-1"
+                                                                onClick={() => setIsProfileOpen(false)}
+                                                            >
+                                                                🛡️ Admin Approvals
+                                                        </Link>
                                                     </div>
                                                 )}
 
