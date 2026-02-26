@@ -16,15 +16,14 @@ def random_date(start_days_ago, end_days_ago=0):
     return start + (end - start) * random.random()
 
 def seed_admin_portfolio():
-    admin_id_str = '1'
+    admin_id_str = 'ADM001'
     admin_username = 'admin'
 
-    
     print(f"Generating portfolio for {admin_username} (ID: {admin_id_str})")
 
     # 1. Clean existing dummy admin livestock and transactions
     db.livestock.delete_many({"owner": admin_username})
-    db.transactions.delete_many({"$or": [{"buyer_id": admin_id_str}, {"seller_id": admin_id_str}]})
+    db.transactions.delete_many({"$or": [{"buyer_id": admin_id_str}, {"seller_id": admin_id_str}, {"buyer_id": "1"}, {"seller_id": "1"}]})
 
     animal_types = [
         {'type': 'goat', 'breeds': ['Boer', 'Khari', 'Jamunapari'], 'base_price': 18000, 'icon': '🐐'},
