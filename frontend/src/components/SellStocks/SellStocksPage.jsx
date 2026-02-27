@@ -80,7 +80,7 @@ const SellStocksPage = () => {
 
     return (
         <DashboardLayout pageTitle="Sell Live Stocks">
-            {user?.kyc_status !== 'verified' && <KYCGuardModal actionLabel="list stocks for sale" />}
+            {user?.kyc_status !== 'verified' && !user?.is_superuser && <KYCGuardModal actionLabel="list stocks for sale" />}
 
             <div className="relative">
                 {/* Floating top right icon - adjusted for layout container */}

@@ -116,7 +116,7 @@ def create_product_listing(request):
         data = request.data.copy()
         
         # Enforce KYC Trade Barrier
-        if request.user.kyc_status != 'verified':
+        if request.user.kyc_status != 'verified' and not request.user.is_superuser:
             logger.warning(f"Blocked product creation attempt for unverified user {request.user.id}")
             return Response(
                 {'error': 'Forbidden', 'message': 'You must complete KYC verification before listing items.'}, 
@@ -689,7 +689,8 @@ def user_profile(request):
             'next_allowed_change': next_allowed,
             'cooldown_days': 90,
             'kyc_status': user.kyc_status,
-            'is_email_verified': user.is_email_verified
+            'is_email_verified': user.is_email_verified,
+            'is_superuser': user.is_superuser
         })
     
     except Exception as e:

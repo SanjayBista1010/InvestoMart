@@ -31,7 +31,7 @@ const CheckoutPage = () => {
         if (cartItems.length === 0) return;
 
         // KYC Gate
-        if (user?.kyc_status !== 'verified') {
+        if (user?.kyc_status !== 'verified' && !user?.is_superuser) {
             setShowKYCGuard(true);
             return;
         }

@@ -24,7 +24,7 @@ def process_payment(request):
         data = request.data
         
         # Enforce KYC Trade Barrier for Buyers
-        if request.user.kyc_status != 'verified':
+        if request.user.kyc_status != 'verified' and not request.user.is_superuser:
             return Response({'error': 'You must complete KYC verification before purchasing items.'}, status=403)
             
         amount = float(data.get('amount', 0))
