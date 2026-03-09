@@ -54,6 +54,10 @@ except (ImportError, AttributeError):
     pass
 # ---------------------------------------------
 
+# Patch for Windows console emoji support
+if sys.stdout and hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8')
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 

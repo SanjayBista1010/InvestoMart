@@ -107,6 +107,58 @@ def generate_products_html_table(products):
         rows += f"<tr><td>{p.get('name')}</td><td>{p.get('category')}</td><td align='right'>{p.get('current_market_price')}</td></tr>"
     return f"<table border='1' width='100%'><thead><tr><th>Product</th><th>Category</th><th>Price</th></tr></thead><tbody>{rows}</tbody></table>"
 
+def get_livestock_performance_data():
+    client = MongoClient(MONGO_URI)
+    try:
+        db = client[MONGO_DB_NAME]
+        livestock_col = db['livestock']
+        
+        pipeline = [
+            {
+                "$project": {
+                    "name": 1,
+                    "breed": 1,
+                    "type": 1,
+                    "purchase_price": { "$toDouble": "$purchase_price" },
+                    "current_value": { "$toDouble": "$current_value" },
+                    "status": 1
+                }
+            },
+            {
+                "$addFields": {
+                    "profit": { "$subtract": ["$current_value", "$purchase_price"] }
+                }
+            },
+            {
+                "$sort": { "profit": -1 }
+            }
+        ]
+        
+        results = list(livestock_col.aggregate(pipeline))
+        if not results: return [], []
+        
+        best_performers = results[:5]
+        worst_performers = results[-5:]
+        worst_performers.reverse()
+        
+        return best_performers, worst_performers
+    except Exception as e:
+        print(f"Livestock performance error: {e}")
+        return [], []
+    finally:
+        client.close()
+
+def generate_livestock_performance_html_table(data, title="Livestock Performance"):
+    if not data: return ""
+    rows = ""
+    for item in data:
+        name = item.get('name') or item.get('breed') or item.get('type') or 'Unknown'
+        profit = item.get('profit', 0)
+        color = 'green' if profit >= 0 else 'red'
+        rows += f"<tr><td>{name}</td><td style='text-transform: capitalize;'>{item.get('type', '')}</td><td align='right' style='color:{color}'>{profit:,.0f}</td></tr>"
+    
+    return f"<h3 style='margin-bottom: 8px; font-weight: bold;'>{title}</h3><table border='1' width='100%'><thead><tr><th>Livestock</th><th>Type</th><th>Profit/Loss</th></tr></thead><tbody>{rows}</tbody></table>"
+
 def detect_sentiment_and_intent(text):
     """Lightweight keyword-based sentiment and intent detection"""
     text = text.lower()
@@ -193,6 +245,27 @@ def chatbot_api(request):
                 if mid: 
                     print(f"DEBUG: Found Mongo User ID: {mid}")
                     portfolio_data = calculate_profit_loss(mid, mongo_manager)
+                    
+                    # [MOCK ADMIN DATA]
+                    if not portfolio_data and user_obj.username == 'admin':
+                        portfolio_data = [
+                            {
+                                'product_name': 'Boer Goat (Investomart Demo)',
+                                'quantity': 2,
+                                'total_investment': 15000.0,
+                                'current_value': 18500.0,
+                                'profit_loss': 3500.0,
+                                'percentage_change': 23.33
+                            },
+                            {
+                                'product_name': 'Kadaknath Chicken (Investomart Demo)',
+                                'quantity': 10,
+                                'total_investment': 5000.0,
+                                'current_value': 4800.0,
+                                'profit_loss': -200.0,
+                                'percentage_change': -4.0
+                            }
+                        ]
             except Exception as e:
                 print(f"DEBUG: Portfolio fetch error: {e}")
 
@@ -203,6 +276,15 @@ def chatbot_api(request):
                 print(f"DEBUG: Vector search found {len(retrieved_products)} products")
         except Exception as e:
             print(f"DEBUG: Vector search error: {e}")
+            
+        best_livestock = []
+        worst_livestock = []
+        livestock_perf_req = False
+        perf_keywords = ['best seller', 'worst performer', 'best perform', 'worst perform', 'top livestock', 'bottom livestock', 'livestock performance']
+        if any(k in message.lower() for k in perf_keywords):
+            livestock_perf_req = True
+            best_livestock, worst_livestock = get_livestock_performance_data()
+            print(f"DEBUG: Retrieved best ({len(best_livestock)}) and worst ({len(worst_livestock)}) performing livestock")
         
         # Build Dynamic Context
         context_parts = []
@@ -229,9 +311,20 @@ def chatbot_api(request):
         if portfolio_data:
             summary = ", ".join([f"{i['product_name']} ({i['quantity']})" for i in portfolio_data[:5]])
             tech_context.append(f"User Portfolio: {summary}")
+        elif user_authenticated and any(k in message.lower() for k in ['portfolio', 'investment']):
+            tech_context.append("User Portfolio: The user currently has no active investments. Inform them that their portfolio is empty.")
         
         if retrieved_products:
             tech_context.append(format_retrieved_context(retrieved_products))
+            
+        if livestock_perf_req:
+            perf_context = "--- LIVESTOCK PERFORMANCE (PROFIT/LOSS) ---\n"
+            if best_livestock:
+                perf_context += "Top 5 Performers / Best Sellers:\n" + "\n".join([f"- {i.get('name') or i.get('breed')} (Type: {i.get('type')}): Net Profit NRS {i.get('profit', 0):.2f}" for i in best_livestock]) + "\n\n"
+            if worst_livestock:
+                perf_context += "Bottom 5 Performers / Worst Performers:\n" + "\n".join([f"- {i.get('name') or i.get('breed')} (Type: {i.get('type')}): Net Profit NRS {i.get('profit', 0):.2f}" for i in worst_livestock]) + "\n"
+            perf_context += "--- END ---\nUse the performance data above to answer the user's question about livestock performance, best sellers, or worst performers."
+            tech_context.append(perf_context)
             
         if tech_context:
             context_parts.append("### SUPPLEMENTARY DATA\n" + "\n".join(tech_context))
@@ -251,10 +344,17 @@ def chatbot_api(request):
         
         # Post-process (Tables)
         final_output = response_text
+        
+        # Append Table based on logic
         if 'portfolio' in message.lower() and portfolio_data:
-            final_output += "|||TABLE|||" + generate_portfolio_html_table(portfolio_data)
+            final_output += "\n\n|||TABLE|||" + generate_portfolio_html_table(portfolio_data)
+        elif livestock_perf_req:
+            if 'worst' in message.lower() or 'bottom' in message.lower():
+                final_output += "\n\n|||TABLE|||" + generate_livestock_performance_html_table(worst_livestock, "Worst Performing Livestock")
+            else:
+                final_output += "\n\n|||TABLE|||" + generate_livestock_performance_html_table(best_livestock, "Top Performing Livestock")
         elif retrieved_products and any(k in message.lower() for k in ['price', 'find']):
-            final_output += "|||TABLE|||" + generate_products_html_table(retrieved_products)
+            final_output += "\n\n|||TABLE|||" + generate_products_html_table(retrieved_products)
             
         # ── Wall-clock latency ────────────────────────────────────────────
         wall_clock_ms = int((time.time() - request_start_time) * 1000)
