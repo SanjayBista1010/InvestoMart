@@ -48,26 +48,26 @@ const AppContent = () => {
         <Route path="/landing" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/search" element={<SearchPage />} />
-        <Route path="/product/:id" element={<ProtectedRoute><ItemDetailsPage type="product" /></ProtectedRoute>} />
-        <Route path="/livestock/:id" element={<ProtectedRoute><ItemDetailsPage type="livestock" /></ProtectedRoute>} />
+        <Route path="/product/:id" element={<ItemDetailsPage type="product" />} />
+        <Route path="/livestock/:id" element={<ItemDetailsPage type="livestock" />} />
         <Route path="/checkout" element={<ProtectedRoute><CheckoutPage /></ProtectedRoute>} />
 
-        {/* Protected Routes */}
-        <Route path="/userdashboard" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
+        {/* User Routes */}
+        <Route path="/userdashboard" element={<UserDashboard />} />
         <Route path="/buy-stocks" element={<ProtectedRoute><BuyStocksPage /></ProtectedRoute>} />
         <Route path="/sell-stocks" element={<ProtectedRoute><SellStocksPage /></ProtectedRoute>} />
         <Route path="/farm-analysis" element={<ProtectedRoute><FarmAnalysisPage /></ProtectedRoute>} />
-        <Route path="/profile" element={<ProtectedRoute><UserProfilePage /></ProtectedRoute>} />
-        <Route path="/surveillance" element={<ProtectedRoute><VideoSurveillancePage /></ProtectedRoute>} />
-        <Route path="/health-records" element={<ProtectedRoute><HealthRecordsPage /></ProtectedRoute>} />
+        <Route path="/profile" element={<UserProfilePage />} />
+        <Route path="/surveillance" element={<VideoSurveillancePage />} />
+        <Route path="/health-records" element={<HealthRecordsPage />} />
 
-        <Route path="/kyc" element={<ProtectedRoute><KYCFormPage /></ProtectedRoute>} />
+        <Route path="/kyc" element={<KYCFormPage />} />
         <Route path="/verify-email" element={<EmailVerificationPage />} />
 
-        <Route path="/dashboard" element={<ProtectedRoute><Dashboard1 /></ProtectedRoute>} />
-        <Route path="/dashboard2" element={<ProtectedRoute><Dashboard2 /></ProtectedRoute>} />
-        <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
-        <Route path="/withdraw" element={<ProtectedRoute><WithdrawPage /></ProtectedRoute>} />
+        <Route path="/dashboard" element={<Dashboard1 />} />
+        <Route path="/dashboard2" element={<Dashboard2 />} />
+        <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/withdraw" element={<WithdrawPage />} />
 
         <Route path="/terms" element={<LegalDoc1 />} />
         <Route path="/privacy" element={<LegalDoc2 />} />
