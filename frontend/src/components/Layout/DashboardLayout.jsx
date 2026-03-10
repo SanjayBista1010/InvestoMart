@@ -10,11 +10,11 @@ const DashboardLayout = ({ children, pageTitle, breadcrumbs = [] }) => {
             <DashboardSidebar />
 
             {/* Main Content */}
-            <div className="flex-1 ml-20 p-6 md:p-8 overflow-y-auto">
+            <div className="flex-1 ml-0 md:ml-20 p-4 pb-24 md:p-8 overflow-y-auto w-full">
                 <div className="max-w-7xl mx-auto h-full flex flex-col relative">
                     {/* Header with Breadcrumbs */}
-                    <div className="flex items-center justify-between mb-8 pr-16">
-                        <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 pr-0 md:pr-16">
+                        <div className="flex items-center gap-1 md:gap-2 text-xs md:text-sm text-gray-500 flex-wrap mb-4 md:mb-0">
                             <span>Dashboard</span>
                             {breadcrumbs.map((crumb, index) => (
                                 <React.Fragment key={index}>

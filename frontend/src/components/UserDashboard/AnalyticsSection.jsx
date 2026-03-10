@@ -56,7 +56,7 @@ const AnalyticsSection = ({ data }) => {
                     </div>
                 </div>
 
-                <div className="flex-grow bg-gray-50 rounded-xl relative overflow-hidden p-4 min-h-[250px]">
+                <div className="bg-gray-50 rounded-xl relative overflow-hidden p-4 h-[300px] w-full mt-auto">
                     {chartData.length > 0 ? (
                         <ResponsiveContainer width="100%" height="100%">
                             <LineChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>

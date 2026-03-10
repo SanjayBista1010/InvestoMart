@@ -22,7 +22,9 @@ const SidebarItem = ({ icon, label, active }) => (
 
 const DashboardSidebar = () => {
     return (
-        <div className="w-20 bg-white h-screen fixed left-0 top-0 border-r border-gray-100 flex flex-col items-center py-6 z-20">
+        <>
+            {/* Desktop Sidebar */}
+            <div className="hidden md:flex w-20 bg-white h-screen fixed left-0 top-0 border-r border-gray-100 flex-col items-center py-6 z-20">
             {/* Logo */}
             <div className="mb-10 text-green-700">
                 <AgricultureIcon fontSize="large" />
@@ -54,7 +56,32 @@ const DashboardSidebar = () => {
                 </Link>
                 <SidebarItem icon={<InfoOutlinedIcon />} label="Information" />
             </div>
-        </div>
+            </div>
+
+            {/* Mobile Bottom Navigation */}
+            <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around items-center h-16 z-50 shadow-[0_-2px_10px_rgba(0,0,0,0.05)] px-2">
+                <Link to="/" className="text-gray-400 hover:text-green-600 flex flex-col items-center active:text-green-700">
+                    <GridViewIcon fontSize="small" />
+                    <span className="text-[10px] mt-1 font-medium">Home</span>
+                </Link>
+                <Link to="/health-records" className="text-gray-400 hover:text-green-600 flex flex-col items-center active:text-green-700">
+                    <SpeedIcon fontSize="small" />
+                    <span className="text-[10px] mt-1 font-medium">Animals</span>
+                </Link>
+                <Link to="/chatbot" className="text-gray-400 hover:text-green-600 flex flex-col items-center active:text-green-700">
+                    <HeadsetMicIcon fontSize="small" />
+                    <span className="text-[10px] mt-1 font-medium">Support</span>
+                </Link>
+                <Link to="/profile" className="text-gray-400 hover:text-green-600 flex flex-col items-center active:text-green-700">
+                    <PersonOutlineIcon fontSize="small" />
+                    <span className="text-[10px] mt-1 font-medium">Profile</span>
+                </Link>
+                <Link to="/settings" className="text-gray-400 hover:text-green-600 flex flex-col items-center active:text-green-700">
+                    <SettingsOutlinedIcon fontSize="small" />
+                    <span className="text-[10px] mt-1 font-medium">Settings</span>
+                </Link>
+            </div>
+        </>
     );
 };
 
