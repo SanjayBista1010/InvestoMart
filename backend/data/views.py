@@ -262,10 +262,12 @@ def google_auth(request):
                 username = f"{original_username}{counter}"
                 counter += 1
                 
+            user_id = f"USR-{uuid.uuid4().hex[:8].upper()}"
             user = User.objects.create_user(
                 username=username,
                 email=email,
-                password=None # Unusable password
+                password=None, # Unusable password
+                user_id=user_id
             )
             
             if name:
@@ -393,10 +395,14 @@ def user_register(request):
             username = f"{original_username}{counter}"
             counter += 1
         
+        # Generate unique user_id 
+        user_id = f"USR-{uuid.uuid4().hex[:8].upper()}"
+        
         user = User.objects.create_user(
             username=username,
             email=email,
-            password=password
+            password=password,
+            user_id=user_id
         )
         
         if name:
