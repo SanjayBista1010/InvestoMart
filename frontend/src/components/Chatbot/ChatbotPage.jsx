@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ChatSidebar from './ChatSidebar';
 import ChatArea from './ChatArea';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../features/auth/context/AuthContext';
 import axios from 'axios';
 
 const ChatbotPage = () => {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../features/auth/context/AuthContext';
 import DashboardLayout from '../Layout/DashboardLayout';
 import Toast from '../Shared/Toast';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';

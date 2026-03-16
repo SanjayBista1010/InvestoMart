@@ -4,7 +4,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import GoogleIcon from '@mui/icons-material/Google';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
-import axios from 'axios';
+import { authService } from '../services/authService';
 import { jwtDecode } from "jwt-decode";
 
 const AuthDrawer = ({ isOpen, onClose, onLoginSuccess }) => {
@@ -21,13 +21,12 @@ const AuthDrawer = ({ isOpen, onClose, onLoginSuccess }) => {
         setError('');
         setIsLoading(true);
 
-        const endpoint = isLogin ? '/api/auth/login/' : '/api/auth/register/';
-        const payload = isLogin ? { email, password } : { email, password, name };
-
         try {
-            const response = await axios.post(`http://localhost:8000${endpoint}`, payload);
-            console.log("Auth Success:", response.data);
-            onLoginSuccess(response.data.user, response.data.token);
+            const data = isLogin 
+                ? await authService.login(payload)
+                : await authService.register(payload);
+            console.log("Auth Success:", data);
+            onLoginSuccess(data.user, data.token);
             onClose();
         } catch (err) {
             console.error("Auth Error:", err);
@@ -40,11 +39,9 @@ const AuthDrawer = ({ isOpen, onClose, onLoginSuccess }) => {
     const handleGoogleSuccess = async (credentialResponse) => {
         try {
             // Send token to backend
-            const response = await axios.post('http://localhost:8000/api/auth/google/', {
-                token: credentialResponse.credential
-            });
-            console.log("Google Auth Success:", response.data);
-            onLoginSuccess(response.data.user, response.data.token);
+            const data = await authService.loginWithGoogle(credentialResponse.credential);
+            console.log("Google Auth Success:", data);
+            onLoginSuccess(data.user, data.token);
             onClose();
         } catch (err) {
             console.error("Google Auth Error:", err);

@@ -1,5 +1,5 @@
 import { Component } from 'react';
-import { handleComponentError } from '../utils/errorHandler';
+import { handleComponentError } from '../shared/utils/errorHandler';
 
 class ErrorBoundary extends Component {
   constructor(props) {

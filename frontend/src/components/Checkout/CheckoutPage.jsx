@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useCart } from '../../context/CartContext';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../features/auth/context/AuthContext';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';

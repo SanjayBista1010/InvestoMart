@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
-import { useAuth } from '../../context/AuthContext';
-import axios from 'axios';
+import { useAuth } from '../features/auth/context/AuthContext';
+import { authService } from '../services/authService';
 import LockIcon from '@mui/icons-material/Lock';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
@@ -30,13 +30,12 @@ const LoginPage = () => {
         setError('');
         setIsLoading(true);
 
-        const endpoint = isLogin ? '/api/auth/login/' : '/api/auth/register/';
-        const payload = isLogin ? { email, password } : { email, password, name };
-
         try {
-            const response = await axios.post(`http://localhost:8000${endpoint}`, payload);
-            console.log("Auth Success:", response.data);
-            login(response.data.user, response.data.token);
+            const data = isLogin 
+                ? await authService.login({ email, password })
+                : await authService.register({ email, password, name });
+            console.log("Auth Success:", data);
+            login(data.user, data.token);
             // AuthContext will handle redirect
         } catch (err) {
             console.error("Auth Error:", err);
@@ -48,11 +47,9 @@ const LoginPage = () => {
 
     const handleGoogleSuccess = async (credentialResponse) => {
         try {
-            const response = await axios.post('http://localhost:8000/api/auth/google/', {
-                token: credentialResponse.credential
-            });
-            console.log("Google Auth Success:", response.data);
-            login(response.data.user, response.data.token);
+            const data = await authService.loginWithGoogle(credentialResponse.credential);
+            console.log("Google Auth Success:", data);
+            login(data.user, data.token);
         } catch (err) {
             console.error("Google Auth Error:", err);
             setError('Google login failed');

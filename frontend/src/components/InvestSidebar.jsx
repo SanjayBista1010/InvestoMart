@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import AgricultureIcon from '@mui/icons-material/Agriculture';
 import axios from 'axios';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../features/auth/context/AuthContext';
 
 export default function InvestSidebar({ isOpen, onClose }) {
   const sidebarRef = useRef(null);

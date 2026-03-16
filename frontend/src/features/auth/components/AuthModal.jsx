@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import axios from 'axios';
-import { createLogger } from '../utils/logger';
-import { handleAxiosError } from '../utils/errorHandler';
+import { authService } from '../services/authService';
+import { createLogger } from '../../../shared/utils/logger';
+import { handleAxiosError } from '../../../shared/utils/errorHandler';
 
 const logger = createLogger('AuthModal');
 
@@ -21,16 +21,17 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
     setLoading(true);
 
     try {
-      const endpoint = isLogin ? '/api/auth/login/' : '/api/auth/register/';
       logger.info(`${isLogin ? 'Login' : 'Registration'} attempt`, { email: formData.email });
       
-      const response = await axios.post(`http://localhost:8000${endpoint}`, formData);
+      const data = isLogin 
+        ? await authService.login(formData)
+        : await authService.register(formData);
       
-      if (response.data.user) {
+      if (data.user) {
         logger.info(`${isLogin ? 'Login' : 'Registration'} successful`, { 
-          user: response.data.user.username 
+          user: data.user.username 
         });
-        onLoginSuccess(response.data.user);
+        onLoginSuccess(data.user);
         onClose();
       }
     } catch (err) {

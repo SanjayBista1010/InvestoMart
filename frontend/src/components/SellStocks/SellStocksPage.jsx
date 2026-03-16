@@ -7,7 +7,7 @@ import axios from 'axios';
 import ConfirmModal from '../Shared/ConfirmModal';
 import Toast from '../Shared/Toast';
 import DashboardLayout from '../Layout/DashboardLayout';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../features/auth/context/AuthContext';
 import KYCGuardModal from '../KYC/KYCGuardModal';
 
 const SellStocksPage = () => {

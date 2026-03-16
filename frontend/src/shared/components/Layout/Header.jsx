@@ -7,7 +7,7 @@ import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import axios from 'axios';
 import { useLanguage } from '../../context/LanguageContext';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../features/auth/context/AuthContext';
 import { useCart } from '../../context/CartContext';
 import SearchBar from '../Search/SearchBar';
 

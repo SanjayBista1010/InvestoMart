@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import InvestSidebar from './InvestSidebar';
 import AgricultureIcon from '@mui/icons-material/Agriculture';
 import { useLanguage } from '../context/LanguageContext';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../features/auth/context/AuthContext';
 
 const HomePage = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);

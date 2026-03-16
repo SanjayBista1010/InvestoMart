@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../features/auth/context/AuthContext';
 import CampaignIcon from '@mui/icons-material/Campaign';
 import SendIcon from '@mui/icons-material/Send';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';

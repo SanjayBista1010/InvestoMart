@@ -1,6 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { authService } from '../services/authService';
 
 const AuthContext = createContext();
 
@@ -45,7 +45,7 @@ export const AuthProvider = ({ children }) => {
 
     const logout = async () => {
         try {
-            await axios.post('http://localhost:8000/api/auth/logout/');
+            await authService.logout();
         } catch (error) {
             console.error("Logout failed silently", error);
         }

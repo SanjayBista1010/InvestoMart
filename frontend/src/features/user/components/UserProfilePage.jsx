@@ -1,40 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React from 'react';
+import { useUserProfile } from '../hooks/useUserProfile';
 import PortfolioSummary from './PortfolioSummary';
 import HoldingsCards from './HoldingsCards';
 import TransactionHistory from './TransactionHistory';
-import DashboardLayout from '../Layout/DashboardLayout';
+import DashboardLayout from '../../../shared/components/Layout/DashboardLayout';
 import CircularProgress from '@mui/material/CircularProgress';
 
 const UserProfilePage = () => {
-    const [profileData, setProfileData] = useState(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState(null);
-
-    useEffect(() => {
-        const fetchProfileData = async () => {
-            setIsLoading(true);
-            try {
-                const token = localStorage.getItem('token');
-                const response = await axios.get('http://localhost:8000/api/profile/summary/', {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-
-                if (response.data.success) {
-                    setProfileData(response.data);
-                } else {
-                    setError('Failed to load profile data.');
-                }
-            } catch (err) {
-                console.error("Profile fetch error:", err);
-                setError('An error occurred while fetching your profile.');
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchProfileData();
-    }, []);
+    const { profileData, isLoading, error } = useUserProfile();
 
     if (isLoading) {
         return (

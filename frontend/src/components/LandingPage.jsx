@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { createLogger } from '../utils/logger';
+import { createLogger } from '../shared/utils/logger';
 
 const logger = createLogger('LandingPage');
 

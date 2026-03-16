@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../features/auth/context/AuthContext';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 
