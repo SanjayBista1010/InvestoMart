@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import DashboardLayout from '../Layout/DashboardLayout';
+import DashboardLayout from '../../shared/components/Layout/DashboardLayout';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import PaymentIcon from '@mui/icons-material/Payment';

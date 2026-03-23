@@ -1,0 +1,17 @@
+﻿diff --git a/backend/investomart/settings.py b/backend/investomart/settings.py
+index d09416c..dd36581 100644
+--- a/backend/investomart/settings.py
++++ b/backend/investomart/settings.py
+@@ -55,8 +55,10 @@ except (ImportError, AttributeError):
+ # ---------------------------------------------
+ 
+ # Patch for Windows console emoji support
+-if sys.stdout and hasattr(sys.stdout, 'reconfigure'):
+-    sys.stdout.reconfigure(encoding='utf-8')
++if sys.stdout:
++    reconfigure_func = getattr(sys.stdout, 'reconfigure', None)
++    if callable(reconfigure_func):
++        reconfigure_func(encoding='utf-8')
+ 
+ # Build paths inside the project like this: BASE_DIR / 'subdir'.
+ BASE_DIR = Path(__file__).resolve().parent.parent

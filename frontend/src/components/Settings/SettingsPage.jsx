@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../features/auth/context/AuthContext';
-import DashboardLayout from '../Layout/DashboardLayout';
+import DashboardLayout from '../../shared/components/Layout/DashboardLayout';
 import Toast from '../Shared/Toast';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';

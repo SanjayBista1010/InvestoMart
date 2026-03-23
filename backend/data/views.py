@@ -36,6 +36,34 @@ logger = logging.getLogger(__name__)
 # Existing views with error handling...
 # Enterprise Data Views will be added here
 
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def api_root(request):
+    """
+    Default root view to provide basic API information and prevent 404s.
+    """
+    return Response({
+        'name': 'InvestoMart API',
+        'status': 'Running',
+        'version': '1.0.0',
+        'endpoints': {
+            'admin': '/admin/',
+            'api': '/api/',
+            'search': '/api/search/',
+            'payments': '/api/payments/',
+            'chatbot': '/api/chatbot/'
+        },
+        'message': 'Welcome to InvestoMart Backend.'
+    })
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def favicon_view(request):
+    """
+    Handle favicon.ico requests with 204 No Content to avoid 404 logs.
+    """
+    return Response(status=status.HTTP_204_NO_CONTENT)
+
 import uuid
 
 @api_view(['GET'])

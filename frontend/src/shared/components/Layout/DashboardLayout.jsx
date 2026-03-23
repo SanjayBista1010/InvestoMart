@@ -1,6 +1,6 @@
 import React from 'react';
-import DashboardSidebar from '../UserDashboard/DashboardSidebar';
-import DashboardHeader from '../UserDashboard/DashboardHeader';
+import DashboardSidebar from '../../../components/UserDashboard/DashboardSidebar';
+import DashboardHeader from '../../../components/UserDashboard/DashboardHeader';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 
 const DashboardLayout = ({ children, pageTitle, breadcrumbs = [] }) => {

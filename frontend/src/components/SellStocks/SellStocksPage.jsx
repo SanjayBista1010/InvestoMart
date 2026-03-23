@@ -6,7 +6,7 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import axios from 'axios';
 import ConfirmModal from '../Shared/ConfirmModal';
 import Toast from '../Shared/Toast';
-import DashboardLayout from '../Layout/DashboardLayout';
+import DashboardLayout from '../../shared/components/Layout/DashboardLayout';
 import { useAuth } from '../../features/auth/context/AuthContext';
 import KYCGuardModal from '../KYC/KYCGuardModal';
 

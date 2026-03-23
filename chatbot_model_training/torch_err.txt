@@ -1,0 +1,19 @@
+Traceback (most recent call last):
+  File "D:\Projects\DjangoReact\investomart\chatbot_model_training\test_torch.py", line 3, in <module>
+    import torch
+  File "C:\Users\Acer\anaconda3\Lib\site-packages\torch\__init__.py", line 2475, in <module>
+    from torch import (
+    ...<4 lines>...
+    )
+  File "C:\Users\Acer\anaconda3\Lib\site-packages\torch\export\__init__.py", line 28, in <module>
+    from torch.fx.passes.infra.pass_base import PassResult
+  File "C:\Users\Acer\anaconda3\Lib\site-packages\torch\fx\passes\__init__.py", line 1, in <module>
+    from . import graph_drawer
+  File "C:\Users\Acer\anaconda3\Lib\site-packages\torch\fx\passes\graph_drawer.py", line 13, in <module>
+    from torch.fx.passes.shape_prop import TensorMetadata
+  File "C:\Users\Acer\anaconda3\Lib\site-packages\torch\fx\passes\shape_prop.py", line 11, in <module>
+    from torch._guards import detect_fake_mode
+  File "C:\Users\Acer\anaconda3\Lib\site-packages\torch\_guards.py", line 29, in <module>
+    from torch._C._dynamo.eval_frame import set_context_frame  # noqa: F401
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ImportError: cannot import name 'set_context_frame' from 'torch._C._dynamo.eval_frame' (unknown location)

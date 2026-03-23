@@ -1,0 +1,58 @@
+﻿git : remote: error: 
+Trace: 42b46a1fb1ea8bb2
+b4b55add1255b808483ab9e
+d29bc8529b7b57bac4472fd
+f7        
+At line:1 char:1
++ git push origin HEAD 
+-f 2>&1 | Out-File 
+-Encoding utf8 
+push_error3.tx ...
++ ~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~
+    + CategoryInfo     
+         : NotSpecifi  
+  ed: (remote: error   
+ : ...472fdf7          
+  :String) [], Rem    
+oteException
+    + FullyQualifiedEr 
+   rorId : NativeComm  
+  andError
+ 
+remote: error: See 
+https://gh.io/lfs for 
+more information.      
+  
+remote: error: File cha
+tbot_model_training/dat
+a/corpus.txt is 197.08 
+MB; this exceeds 
+GitHub's file size 
+limit of 100.00 MB     
+   
+remote: error: File cha
+tbot_model_training/dat
+a/corpus.txt is 862.36 
+MB; this exceeds 
+GitHub's file size 
+limit of 100.00 MB     
+   
+remote: error: GH001: 
+Large files detected. 
+You may want to try 
+Git Large File Storage 
+- https://git-lfs.githu
+b.com.        
+To https://github.com/S
+anjayBista1010/InvestoM
+art.git
+ ! [remote rejected] 
+HEAD -> 
+fix/frontend-backend 
+(pre-receive hook 
+declined)
+error: failed to push 
+some refs to 'https://g
+ithub.com/SanjayBista10
+10/InvestoMart.git'

@@ -6,10 +6,10 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import axios from 'axios';
-import { useLanguage } from '../../context/LanguageContext';
-import { useAuth } from '../../features/auth/context/AuthContext';
-import { useCart } from '../../context/CartContext';
-import SearchBar from '../Search/SearchBar';
+import { useLanguage } from '../../../context/LanguageContext';
+import { useAuth } from '../../../features/auth/context/AuthContext';
+import { useCart } from '../../../context/CartContext';
+import SearchBar from '../../../components/Search/SearchBar';
 
 const Header = () => {
     const location = useLocation();

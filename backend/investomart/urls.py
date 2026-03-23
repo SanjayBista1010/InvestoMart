@@ -16,8 +16,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from data.views import api_root, favicon_view
 
 urlpatterns = [
+    path('', api_root, name='api_root'),
+    path('favicon.ico', favicon_view, name='favicon'),
     path('admin/', admin.site.urls),
     path('api/', include('data.urls')),
     path('api/search/', include('searchapp.urls')),

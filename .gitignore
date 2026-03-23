@@ -69,3 +69,7 @@ Thumbs.db
 *.bak
 *.swp
 *.tmp
+
+# Chatbot Model Training Large Files
+chatbot_model_training/data/
+chatbot_model_training/weights/

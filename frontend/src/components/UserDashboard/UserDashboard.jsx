@@ -5,7 +5,7 @@ import StatsCards from './StatsCards';
 import ActionCards from './ActionCards';
 import AnalyticsSection from './AnalyticsSection';
 import NotificationsSection from './NotificationsSection';
-import DashboardLayout from '../Layout/DashboardLayout';
+import DashboardLayout from '../../shared/components/Layout/DashboardLayout';
 
 const UserDashboard = () => {
     const [dashboardData, setDashboardData] = useState(null);

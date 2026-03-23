@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../features/auth/context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import DashboardLayout from '../Layout/DashboardLayout';
+import DashboardLayout from '../../shared/components/Layout/DashboardLayout';
 import { LineChart, Line, BarChart, Bar, AreaChart, Area, ComposedChart, Legend, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 
 const PRICE_PER_1K_TOKENS = 0.03; // Reference: Approx. cloud inference cost (OpenAI GPT-3.5 equiv.)
